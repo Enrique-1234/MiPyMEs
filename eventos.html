@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salón de Eventos — ReservaPro</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/animation.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <style>
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-dark: #1d4ed8;
+      --color-primary-light: #3b82f6;
+      --color-accent: #c9a227;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar scrolled">
+    <div class="container navbar-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-mark" style="background: linear-gradient(135deg,#1e3a8a,#c9a227);">E</span>
+        <span>Salón Élite</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Inicio</a>
+        <a href="#paquetes">Paquetes</a>
+        <a href="#galeria">Galería</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="reservas.html" class="btn btn-primary btn-sm">Cotizar evento</a>
+      </div>
+    </div>
+  </header>
+
+  <main style="padding-top: 5rem;">
+    <section class="section" style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color:#fff; padding-block: clamp(3rem, 6vw, 5rem);">
+      <div class="container text-center">
+        <h1 style="color:#fff;" class="reveal">Eventos que dejan<br /><span style="color:#c9a227;">huella.</span></h1>
+        <p style="color: rgba(255,255,255,.8); max-width: 540px; margin: 1rem auto 2rem; font-size: 1.0625rem;" class="reveal reveal-delay-1">
+          Bodas, cumpleaños, corporativos y celebraciones. Espacios elegantes, servicio premium y atención personalizada.
+        </p>
+        <a href="reservas.html" class="btn btn-lg reveal reveal-delay-2" style="background:#c9a227; color:#1e3a8a;">Solicitar cotización</a>
+      </div>
+    </section>
+
+    <section class="section" id="paquetes">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>Paquetes disponibles</h2>
+          <p>Elige el que mejor se adapte a tu celebración.</p>
+        </div>
+
+        <div class="solutions-grid" style="grid-template-columns: 1fr; max-width: 1000px; margin-inline: auto;">
+          <article class="solution-card reveal" style="--card-accent:#2563eb;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+              <div>
+                <h3>Paquete Esencial</h3>
+                <p>Hasta 80 invitados · 4 horas de evento</p>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#2563eb;">$850.000</div>
+            </div>
+            <ul style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem; font-size:.9375rem; color:var(--color-text-soft);">
+              <li>✓ Salón principal decorado</li>
+              <li>✓ Sonido e iluminación básica</li>
+              <li>✓ Mesa de postres</li>
+              <li>✓ Servicio de meseros</li>
+            </ul>
+          </article>
+
+          <article class="solution-card reveal reveal-delay-1" style="--card-accent:#c9a227; border-color:#c9a227;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+              <div>
+                <h3>Paquete Premium <span class="badge badge-warning" style="margin-left:.5rem;">Popular</span></h3>
+                <p>Hasta 150 invitados · 6 horas de evento</p>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#c9a227;">$1.500.000</div>
+            </div>
+            <ul style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem; font-size:.9375rem; color:var(--color-text-soft);">
+              <li>✓ Todo lo del Esencial</li>
+              <li>✓ Decoración temática personalizada</li>
+              <li>✓ DJ profesional</li>
+              <li>✓ Barra de bebidas</li>
+              <li>✓ Coordinador de evento</li>
+            </ul>
+          </article>
+
+          <article class="solution-card reveal reveal-delay-2" style="--card-accent:#1e3a8a;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+              <div>
+                <h3>Paquete Deluxe</h3>
+                <p>Hasta 300 invitados · 8 horas de evento</p>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#1e3a8a;">$2.800.000</div>
+            </div>
+            <ul style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem; font-size:.9375rem; color:var(--color-text-soft);">
+              <li>✓ Todo lo del Premium</li>
+              <li>✓ Salón completo + terraza</li>
+              <li>✓ Catering gourmet</li>
+              <li>✓ Fotografía y video</li>
+              <li>✓ Wedding planner</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contacto" style="background: var(--color-bg-soft);">
+      <div class="container text-center reveal">
+        <h2>¿Listo para tu evento?</h2>
+        <p class="text-soft" style="max-width: 480px; margin: 1rem auto 2rem;">
+          Cuéntanos qué necesitas y te enviaremos una cotización personalizada.
+        </p>
+        <a href="reservas.html" class="btn btn-primary btn-lg">Solicitar cotización</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <span>© 2025 Salón Élite · Powered by ReservaPro</span>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/animations.js"></script>
+</body>
+</html>
