@@ -1,126 +1,283 @@
-import React, { useEffect, useRef } from 'react';
-import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { Navbar } from '../../../components/common/Navbar/Navbar';
 
-const Container = styled.div`
-  padding-top: 70px;
-  min-height: 100vh;
-`;
+import {
+  HomeContainer, HeroSection, Blob, HeroInner, PinStage, MainTitle, Word, HeroLead,
+  CTARow, CTAButton, FloatingChip, StatsRow, MarqueeWrap, MarqueeTrack, Section,
+  StepsGrid, StepsLine, FilterBar, FilterChip, BusinessGrid, BusinessCard,
+  Skeleton, EmptyState, FinalCTA
+} from './Home.styles';
 
-const Hero = styled.section`
-  padding: 5rem 2rem 4rem;
-  text-align: center;
-  max-width: 900px;
-  margin: 0 auto;
-`;
+gsap.registerPlugin(ScrollTrigger);
 
-const Badge = styled.span`
-  display: inline-block;
-  background: rgba(37, 99, 235, 0.1);
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 0.35rem 1rem;
-  border-radius: 50px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-`;
+const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const Title = styled.h1`
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 1.25rem;
-  color: ${({ theme }) => theme.colors.text};
-  
-  span {
-    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.accent});
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-`;
+const DEMO_BUSINESSES = [
+  { id: 1, category: 'Comida', name: 'Taquería El Punto', description: 'Tacos al pastor y suadero, abierto hasta la madrugada.' },
+  { id: 2, category: 'Belleza', name: 'Estudio Aura', description: 'Corte, color y tratamientos con cita por WhatsApp.' },
+  { id: 3, category: 'Servicios', name: 'TecniFix', description: 'Reparación de celulares y computadoras en el día.' },
+  { id: 4, category: 'Comida', name: 'Panadería La Espiga', description: 'Pan artesanal recién horneado cada mañana.' },
+  { id: 5, category: 'Salud', name: 'Clínica Vida Plena', description: 'Consulta general y dental con precios accesibles.' },
+  { id: 6, category: 'Tiendas', name: 'Moda Nova', description: 'Ropa de temporada y accesorios para toda la familia.' },
+  { id: 7, category: 'Servicios', name: 'Plomería Express', description: 'Atención a domicilio en menos de una hora.' },
+  { id: 8, category: 'Tiendas', name: 'Ferretería Central', description: 'Herramientas, pintura y material de construcción.' }
+];
 
-const Description = styled.p`
-  font-size: 1.125rem;
-  color: ${({ theme }) => theme.colors.textSoft};
-  max-width: 620px;
-  margin: 0 auto 2.5rem;
-`;
+const MARQUEE_ITEMS = ['Restaurantes', 'Belleza', 'Tiendas', 'Servicios', 'Salud', 'Educación', 'Mascotas', 'Hogar'];
+const HERO_WORDS = 'Descubre los mejores comercios en'.split(' ');
+const PIN_PATH = 'M50 8C30 8 16 23 16 42c0 24 34 50 34 50s34-26 34-50C84 23 70 8 50 8Z';
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  max-width: 1100px;
-  margin: 2rem auto;
-  padding: 0 2rem;
-`;
+/* Hook para efecto magnético */
+const useMagnetic = (strength = 0.35) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReduced()) return;
+    const xTo = gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' });
+    const yTo = gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out' });
+    const move = (e) => {
+      const r = el.getBoundingClientRect();
+      xTo((e.clientX - (r.left + r.width / 2)) * strength);
+      yTo((e.clientY - (r.top + r.height / 2)) * strength);
+    };
+    const leave = () => { xTo(0); yTo(0); };
+    el.addEventListener('mousemove', move);
+    el.addEventListener('mouseleave', leave);
+    return () => { el.removeEventListener('mousemove', move); el.removeEventListener('mouseleave', leave); };
+  }, [strength]);
+  return ref;
+};
 
-const Card = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
-  padding: 1.75rem;
-  text-align: left;
-  transition: transform 0.2s, box-shadow 0.2s;
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px -6px rgba(0,0,0,0.08);
-  }
+/* Tarjeta 3D con efecto de inclinación */
+const TiltCard = ({ biz }) => {
+  const ref = useRef(null);
 
-  h3 { margin-bottom: 0.5rem; }
-  p { font-size: 0.875rem; color: ${({ theme }) => theme.colors.textSoft}; }
-`;
+  const onMove = (e) => {
+    if (prefersReduced()) return;
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    el.style.setProperty('--gx', `${x * 100}%`);
+    el.style.setProperty('--gy', `${y * 100}%`);
+    gsap.to(el, { rotateY: (x - 0.5) * 12, rotateX: (0.5 - y) * 12, scale: 1.03, transformPerspective: 900, duration: 0.4, ease: 'power2.out', overwrite: 'auto' });
+  };
+
+  const onLeave = () => {
+    if (!ref.current) return;
+    gsap.to(ref.current, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.7, ease: 'elastic.out(1, 0.5)', overwrite: 'auto' });
+  };
+
+  return (
+    <BusinessCard ref={ref} className="biz-card" onMouseMove={onMove} onMouseLeave={onLeave}>
+      <span className="category-tag">{biz.category}</span>
+      <h3>{biz.name}</h3>
+      <p>{biz.description}</p>
+      <span className="cta">
+        Ver negocio
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </span>
+    </BusinessCard>
+  );
+};
 
 export const Home = () => {
   const heroRef = useRef(null);
+  const gridRef = useRef(null);
+  const [businesses, setBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('Todos');
 
+  const primaryBtn = useMagnetic();
+  const ghostBtn = useMagnetic();
+  const finalBtn = useMagnetic(0.25);
+
+  /* Carga de datos de prueba */
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.gsap-hero', {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, heroRef);
-
-    return () => ctx.revert();
+    let alive = true;
+    const t = setTimeout(() => { if (alive) { setBusinesses(DEMO_BUSINESSES); setLoading(false); } }, 900);
+    return () => { alive = false; clearTimeout(t); };
   }, []);
 
-  return (
-    <Container ref={heroRef}>
-      <Navbar />
-      <Hero>
-        <Badge className="gsap-hero">📍 Plataforma para Nicolás Romero y Edomex</Badge>
-        <Title className="gsap-hero">
-          Gestiona tus citas y reservas <span>AlPunto</span>
-        </Title>
-        <Description className="gsap-hero">
-          La solución integral para Barberías, Restaurantes, Salones de Eventos y Comunidades.
-        </Description>
-      </Hero>
+  /* Scroll suave */
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = 'smooth';
+    return () => { document.documentElement.style.scrollBehavior = ''; };
+  }, []);
 
-      <Grid className="gsap-hero">
-        <Card>
-          <h3>💈 Barberías & Estéticas</h3>
-          <p>Agenda de cortes, tintes y selección de barberos con precios en MXN.</p>
-        </Card>
-        <Card>
-          <h3>🍽️ Restaurantes</h3>
-          <p>Mapa interactivo de mesas con selector de terrazas y zonas principales.</p>
-        </Card>
-        <Card>
-          <h3>🎉 Salones de Eventos</h3>
-          <p>Cotizaciones de paquetes completos para XV años, bodas y bautizos.</p>
-        </Card>
-        <Card>
-          <h3>⛪ Iglesias & Comunidades</h3>
-          <p>Control de aforo para servicios dominicales y actividades comunitarias.</p>
-        </Card>
-      </Grid>
-    </Container>
+  /* Animación principal acotada estrictamente a heroRef */
+  useGSAP(() => {
+    if (prefersReduced()) return;
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    tl.fromTo('.pin-body', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut' })
+      .fromTo('.pin-fill', { opacity: 0 }, { opacity: 1, duration: 0.5 }, '-=0.3')
+      .fromTo('.pin-dot', { scale: 0, transformOrigin: '50% 50%' }, { scale: 1, duration: 0.6, ease: 'back.out(3)' }, '-=0.3')
+      .from('.hero-word > span', { yPercent: 115, rotate: 4, duration: 0.9, stagger: 0.07 }, 0.25)
+      .from('.hero-lead, .hero-cta-item', { y: 24, opacity: 0, duration: 0.7, stagger: 0.1 }, '-=0.5')
+      .from('.hero-chip', { scale: 0, opacity: 0, duration: 0.6, ease: 'back.out(2.5)', stagger: 0.12 }, '-=0.5')
+      .from('.stat', { y: 20, opacity: 0, duration: 0.6, stagger: 0.1 }, '-=0.4');
+
+    gsap.to('.pin-group', { y: -8, duration: 1.8, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.6 });
+    gsap.fromTo('.ripple', { scale: 0.3, opacity: 0.8, transformOrigin: '50% 50%' },
+      { scale: 1.7, opacity: 0, duration: 2.2, ease: 'power1.out', repeat: -1, stagger: 0.7, delay: 1.4 });
+
+    gsap.utils.toArray('.stat-num').forEach((el) => {
+      const o = { v: 0 };
+      gsap.to(o, { v: Number(el.dataset.value), duration: 2, ease: 'power2.out', delay: 1.2, onUpdate: () => { el.textContent = Math.round(o.v); } });
+    });
+
+    gsap.fromTo('.steps-line-fill', { scaleX: 0 }, {
+      scaleX: 1, ease: 'none',
+      scrollTrigger: { trigger: '.steps-grid', start: 'top 70%', end: 'bottom 55%', scrub: true }
+    });
+    gsap.from('.step-item', {
+      y: 50, opacity: 0, stagger: 0.2, duration: 0.8, ease: 'power3.out',
+      scrollTrigger: { trigger: '.steps-grid', start: 'top 80%' }
+    });
+
+    gsap.from('.final-cta', {
+      scale: 0.92, opacity: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: '.final-cta', start: 'top 88%' }
+    });
+  }, { scope: heroRef });
+
+  const categories = useMemo(() => ['Todos', ...new Set(businesses.map((b) => b.category))], [businesses]);
+  const visible = useMemo(
+    () => (filter === 'Todos' ? businesses : businesses.filter((b) => b.category === filter)),
+    [businesses, filter]
+  );
+
+  /* Revelado animado de tarjetas (se ejecuta solo cuando hay elementos renderizados) */
+  useGSAP(() => {
+    if (prefersReduced() || !visible.length) return;
+    gsap.set('.biz-card', { opacity: 0, y: 60 });
+    ScrollTrigger.batch('.biz-card', {
+      start: 'top 90%',
+      onEnter: (batch) => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.08, duration: 0.7, ease: 'power3.out', overwrite: 'auto' })
+    });
+  }, { scope: gridRef, dependencies: [visible] });
+
+  const onHeroMove = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
+  };
+
+  const marquee = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
+
+  return (
+    <>
+      {/* Navbar fuera del scope de animación de GSAP */}
+      <Navbar />
+
+      <HomeContainer ref={heroRef}>
+        <HeroSection onMouseMove={onHeroMove}>
+          <Blob $color="#2563eb" $top="-10%" $left="-8%" $size={460} />
+          <Blob $color="#06b6d4" $top="40%" $right="-10%" $size={380} $dur={18} />
+          <Blob $color="#c9a227" $top="65%" $left="25%" $size={300} $dur={16} />
+
+          <FloatingChip className="hero-chip" $top="26%" $left="9%" $delay={0}><i />Restaurantes</FloatingChip>
+          <FloatingChip className="hero-chip" $top="55%" $left="6%" $dur={6} $delay={0.8} $color="#c9a227"><i />Belleza</FloatingChip>
+          <FloatingChip className="hero-chip" $top="30%" $right="8%" $dur={5.5} $delay={0.4} $color="#06b6d4"><i />Servicios</FloatingChip>
+          <FloatingChip className="hero-chip" $top="60%" $right="10%" $dur={6.5} $delay={1.2}><i />Tiendas</FloatingChip>
+
+          <HeroInner>
+            <PinStage aria-hidden="true">
+              <svg viewBox="0 0 100 110">
+                <defs>
+                  <linearGradient id="pinGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" className="g1" />
+                    <stop offset="100%" className="g2" />
+                  </linearGradient>
+                </defs>
+                <ellipse className="ripple" cx="50" cy="100" rx="22" ry="6" />
+                <ellipse className="ripple" cx="50" cy="100" rx="22" ry="6" />
+                <g className="pin-group">
+                  <path className="pin-fill" d={PIN_PATH} />
+                  <path className="pin-body" d={PIN_PATH} pathLength="1" />
+                  <circle className="pin-dot" cx="50" cy="42" r="12" />
+                </g>
+              </svg>
+            </PinStage>
+
+            <MainTitle aria-label="Descubre los mejores comercios en AlPunto">
+              {HERO_WORDS.map((w, i) => (
+                <React.Fragment key={i}>
+                  <Word className="hero-word" aria-hidden="true"><span>{w}</span></Word>{' '}
+                </React.Fragment>
+              ))}
+              <Word className="hero-word" $brand aria-hidden="true"><span>AlPunto</span></Word>
+            </MainTitle>
+
+            <HeroLead className="hero-lead">
+              Encuentra, compara y contacta negocios locales de Nicolás Romero en un solo lugar. ¿Tienes uno? Hazlo visible hoy.
+            </HeroLead>
+
+            <CTARow className="hero-cta">
+              <CTAButton className="hero-cta-item" ref={primaryBtn} href="#negocios">Explorar negocios</CTAButton>
+              <CTAButton className="hero-cta-item" ref={ghostBtn} href="/registro" $variant="ghost">Registrar mi negocio</CTAButton>
+            </CTARow>
+
+            <StatsRow>
+              <div className="stat"><strong><span className="stat-num" data-value="30">30</span>+</strong><span>negocios locales</span></div>
+              <div className="stat"><strong><span className="stat-num" data-value="12">12</span></strong><span>categorías</span></div>
+              <div className="stat"><strong><span className="stat-num" data-value="24">24</span>/7</strong><span>visibles en línea</span></div>
+            </StatsRow>
+          </HeroInner>
+        </HeroSection>
+
+        <MarqueeWrap aria-hidden="true">
+          <MarqueeTrack>
+            {marquee.map((m, i) => <span key={i}>{m}</span>)}
+          </MarqueeTrack>
+        </MarqueeWrap>
+
+        <Section id="como-funciona">
+          <h2>Tu negocio visible en tres pasos</h2>
+          <p className="lead">Sin conocimientos técnicos. Empiezas en minutos.</p>
+          <StepsGrid className="steps-grid">
+            <StepsLine><div className="steps-line-fill" /></StepsLine>
+            <div className="step-item"><div className="step-num">1</div><h3>Crea tu cuenta</h3><p>Regístrate y agrega los datos básicos de tu negocio.</p></div>
+            <div className="step-item"><div className="step-num">2</div><h3>Publica tu catálogo</h3><p>Sube fotos, horarios, ubicación y tus productos o servicios.</p></div>
+            <div className="step-item"><div className="step-num">3</div><h3>Recibe clientes</h3><p>La gente de tu zona te encuentra y te contacta directo.</p></div>
+          </StepsGrid>
+        </Section>
+
+        <Section id="negocios">
+          <h2>Comercios en Nicolás Romero</h2>
+          <p className="lead">Explora por categoría y encuentra lo que necesitas cerca de ti.</p>
+
+          {!loading && categories.length > 1 && (
+            <FilterBar role="tablist" aria-label="Filtrar por categoría">
+              {categories.map((c) => (
+                <FilterChip key={c} $active={filter === c} onClick={() => setFilter(c)} role="tab" aria-selected={filter === c}>{c}</FilterChip>
+              ))}
+            </FilterBar>
+          )}
+
+          <BusinessGrid ref={gridRef}>
+            {loading ? (
+              Array.from({ length: 6 }, (_, i) => <Skeleton key={i} />)
+            ) : visible.length === 0 ? (
+              <EmptyState>Aún no hay negocios en esta categoría. ¡Sé el primero en registrarte!</EmptyState>
+            ) : (
+              visible.map((biz) => <TiltCard key={biz.id} biz={biz} />)
+            )}
+          </BusinessGrid>
+        </Section>
+
+        <FinalCTA id="unete" className="final-cta">
+          <h2>Haz que te encuentren AlPunto</h2>
+          <p>Registra tu negocio gratis y aparece frente a los clientes que ya te están buscando.</p>
+          <a ref={finalBtn} href="/registro">Registrar mi negocio</a>
+        </FinalCTA>
+      </HomeContainer>
+    </>
   );
 };

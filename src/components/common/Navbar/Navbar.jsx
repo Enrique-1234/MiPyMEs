@@ -1,124 +1,144 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+// src/components/common/Navbar/Navbar.jsx
+import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { useAuth } from '../../../context/AuthContext';
+import { MorphOverlay } from './MorphOverlay/MorphOverlay';
+import {
+  NavHeader,
+  NavProgress,
+  LogoBrand,
+  NavLinksGroup,
+  NavActionsGroup,
+  NavButton,
+  LogoutButton,
+  MenuButton
+} from './Navbar.styles';
 
-const Nav = styled.header`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  z-index: 1000;
-`;
-
-const Logo = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: ${({ theme }) => theme.colors.text};
-
-  span.mark {
-    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.accent});
-    color: #fff;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    font-size: 1.1rem;
-  }
-`;
-
-const NavLinks = styled.nav`
-  display: flex;
-  gap: 1.5rem;
-  a {
-    font-weight: 500;
-    color: ${({ theme }) => theme.colors.textSoft};
-    transition: color 0.2s;
-    &:hover {
-      color: ${({ theme }) => theme.colors.primary};
-    }
-  }
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-`;
-
-const Button = styled(Link)`
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  ${({ $primary, theme }) =>
-    $primary
-      ? `
-    background: ${theme.colors.primary};
-    color: #fff;
-    &:hover { background: ${theme.colors.primaryDark}; }
-  `
-      : `
-    border: 1px solid ${theme.colors.border};
-    color: ${theme.colors.text};
-    &:hover { background: ${theme.colors.background}; }
-  `}
-`;
+const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, getHomeRoute } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef(null);
+  const barRef = useRef(null);
+
+  // Animaciones de GSAP seguras con useGSAP
+  useGSAP(() => {
+    const header = headerRef.current;
+    const bar = barRef.current;
+    if (!header || !bar) return;
+
+    const reduce = prefersReduced();
+
+    // Animación de entrada inicial usando fromTo para asegurar que siempre quede visible (yPercent: 0)
+    if (!reduce) {
+      gsap.fromTo(
+        header,
+        { yPercent: -100, opacity: 0 },
+        {
+          yPercent: 0,
+          opacity: 1,
+          duration: 0.9,
+          ease: 'power3.out',
+          delay: 0.15,
+        }
+      );
+    } else {
+      gsap.set(header, { yPercent: 0, opacity: 1 });
+    }
+
+    const setProgress = gsap.quickSetter(bar, 'scaleX');
+    let last = window.scrollY;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? y / max : 0);
+      setScrolled(y > 20);
+
+      if (!reduce) {
+        const hide = y > last && y > 200;
+        gsap.to(header, {
+          yPercent: hide ? -100 : 0,
+          duration: 0.4,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        });
+      }
+      last = y;
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, { scope: headerRef });
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const dashboardRoute = getHomeRoute ? getHomeRoute() : '/dashboard';
+
+  const menuLinks = [
+    { label: 'Inicio', to: '/' },
+    { label: 'Negocios', to: '/#negocios' },
+    { label: 'Cómo funciona', to: '/#como-funciona' },
+    user
+      ? { label: 'Mi panel', to: dashboardRoute }
+      : { label: 'Iniciar sesión', to: '/login' },
+    ...(user ? [] : [{ label: 'Registrarse', to: '/registro' }])
+  ];
+
   return (
-    <Nav>
-      <Logo to="/">
-        <span class="mark">A</span>
-        <span>AlPunto</span>
-      </Logo>
+    <>
+      <NavHeader ref={headerRef} $scrolled={scrolled}>
+        <LogoBrand to="/">
+          <span className="logo-mark">A</span>
+          <span>AlPunto</span>
+        </LogoBrand>
 
-      <NavLinks>
-        <Link to="/#soluciones">Soluciones</Link>
-        <Link to="/#funciona">Cómo funciona</Link>
-        <Link to="/#ventajas">Ventajas</Link>
-      </NavLinks>
+        <NavLinksGroup>
+          <a href="/#negocios">Negocios</a>
+          <a href="/#como-funciona">Cómo funciona</a>
+          <a href="/#unete">Para tu negocio</a>
+        </NavLinksGroup>
 
-      <Actions>
-        {user ? (
-          <>
-            <Button to="/dashboard" $primary="true">Mi Panel ({user.name || 'Usuario'})</Button>
-            <button 
-              onClick={handleLogout} 
-              style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#ef4444', fontWeight: 600, padding: '0.5rem' }}
-            >
-              Salir
-            </button>
-          </>
-        ) : (
-          <>
-            <Button to="/login">Iniciar sesión</Button>
-            <Button to="/registro" $primary="true">Registrarse</Button>
-          </>
-        )}
-      </Actions>
-    </Nav>
+        <NavActionsGroup>
+          {user ? (
+            <>
+              <NavButton to={dashboardRoute} $primary={true}>
+                Mi Panel ({user.name || user.email})
+              </NavButton>
+              <LogoutButton onClick={handleLogout}>Cerrar sesión</LogoutButton>
+            </>
+          ) : (
+            <>
+              <NavButton to="/login">Iniciar sesión</NavButton>
+              <NavButton to="/registro" $primary={true}>Registrarse</NavButton>
+            </>
+          )}
+          <MenuButton
+            aria-label="Abrir menú"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <span />
+            <span />
+          </MenuButton>
+        </NavActionsGroup>
+
+        <NavProgress ref={barRef} aria-hidden="true" />
+      </NavHeader>
+
+      <MorphOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} links={menuLinks} />
+    </>
   );
 };
