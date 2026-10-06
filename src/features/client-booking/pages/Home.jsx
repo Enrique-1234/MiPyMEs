@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { Navbar } from '../../../components/common/Navbar/Navbar';
-
+import { publicBusinessesService } from '../services/publicBusinessesService';
 import {
   HomeContainer, HeroSection, Blob, HeroInner, PinStage, MainTitle, Word, HeroLead,
   CTARow, CTAButton, FloatingChip, StatsRow, MarqueeWrap, MarqueeTrack, Section,
@@ -14,17 +14,6 @@ import {
 gsap.registerPlugin(ScrollTrigger);
 
 const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-const DEMO_BUSINESSES = [
-  { id: 1, category: 'Comida', name: 'Taquería El Punto', description: 'Tacos al pastor y suadero, abierto hasta la madrugada.' },
-  { id: 2, category: 'Belleza', name: 'Estudio Aura', description: 'Corte, color y tratamientos con cita por WhatsApp.' },
-  { id: 3, category: 'Servicios', name: 'TecniFix', description: 'Reparación de celulares y computadoras en el día.' },
-  { id: 4, category: 'Comida', name: 'Panadería La Espiga', description: 'Pan artesanal recién horneado cada mañana.' },
-  { id: 5, category: 'Salud', name: 'Clínica Vida Plena', description: 'Consulta general y dental con precios accesibles.' },
-  { id: 6, category: 'Tiendas', name: 'Moda Nova', description: 'Ropa de temporada y accesorios para toda la familia.' },
-  { id: 7, category: 'Servicios', name: 'Plomería Express', description: 'Atención a domicilio en menos de una hora.' },
-  { id: 8, category: 'Tiendas', name: 'Ferretería Central', description: 'Herramientas, pintura y material de construcción.' }
-];
 
 const MARQUEE_ITEMS = ['Restaurantes', 'Belleza', 'Tiendas', 'Servicios', 'Salud', 'Educación', 'Mascotas', 'Hogar'];
 const HERO_WORDS = 'Descubre los mejores comercios en'.split(' ');
@@ -77,10 +66,10 @@ const TiltCard = ({ biz }) => {
       <span className="category-tag">{biz.category}</span>
       <h3>{biz.name}</h3>
       <p>{biz.description}</p>
-      <span className="cta">
-        Ver negocio
+      <a className="cta" href={`/negocio/${biz.slug}`} onClick={(e) => e.stopPropagation()}>
+          Ver negocio
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-      </span>
+      </a>
     </BusinessCard>
   );
 };
@@ -96,12 +85,23 @@ export const Home = () => {
   const ghostBtn = useMagnetic();
   const finalBtn = useMagnetic(0.25);
 
-  /* Carga de datos de prueba */
-  useEffect(() => {
-    let alive = true;
-    const t = setTimeout(() => { if (alive) { setBusinesses(DEMO_BUSINESSES); setLoading(false); } }, 900);
-    return () => { alive = false; clearTimeout(t); };
-  }, []);
+  /* Carga de negocios reales desde Supabase */
+useEffect(() => {
+  let alive = true;
+  const load = async () => {
+    try {
+      const data = await publicBusinessesService.list();
+      if (alive) setBusinesses(data);
+    } catch (err) {
+      console.error('Error:', err);
+      if (alive) setBusinesses([]);
+    } finally {
+      if (alive) setLoading(false);
+    }
+  };
+  load();
+  return () => { alive = false; };
+}, []);
 
   /* Scroll suave */
   useEffect(() => {

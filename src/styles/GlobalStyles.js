@@ -77,4 +77,25 @@ export const GlobalStyles = createGlobalStyle`
     background: ${({ theme }) => theme.colors.gradientPrimary};
     border-radius: 999px;
   }
+      /* SweetAlert2 — personalización fina */
+  .swal2-popup.alpunto-swal-popup {
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: 16px;
+    font-family: ${({ theme }) => theme.fonts.body};
+  }
+  .swal2-title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .swal2-html-container {
+    color: ${({ theme }) => theme.colors.textSoft} !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5;
+  }
+  .swal2-timer-progress-bar {
+    background: ${({ theme }) => theme.colors.primary};
+  }
+  .swal2-toast {
+    border: 1px solid ${({ theme }) => theme.colors.border};
+  }
 `;

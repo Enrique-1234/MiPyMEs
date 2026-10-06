@@ -6,11 +6,21 @@ import { useAuth } from '../context/AuthContext';
 import { Home } from '../features/client-booking/pages/Home';
 import { Login } from '../features/auth/pages/Login';
 import { SuperAdminDashboard } from '../features/super-admin/pages/SuperAdminDashboard';
-import { Dashboard as BusinessDashboard } from '../features/business-admin/pages/Dashboard';
-import { UserDashboard } from '../features/client-booking/pages/UserDashboard';
+import { BusinessDashboard } from '../features/business-admin/pages/BusinessDashboard';import { UserDashboard } from '../features/client-booking/pages/UserDashboard';
 import { Placeholder } from '../components/common/Placeholder/Placeholder';
-
+import { BusinessesList } from '../features/super-admin/pages/BusinessesList';
+import { BusinessForm } from '../features/super-admin/pages/BusinessForm';
 import { ProtectedRoute } from './ProtectedRoute';
+import { ZonesList } from '../features/super-admin/pages/ZonesList';
+import { ZoneForm } from '../features/super-admin/pages/ZoneForm';
+import { TablesList } from '../features/super-admin/pages/TablesList';
+import { TableForm } from '../features/super-admin/pages/TableForm';
+import { BusinessDetail } from '../features/client-booking/pages/BusinessDetail';
+import { ReservationConfirmation } from '../features/client-booking/pages/ReservationConfirmation';
+import { ReservationsList } from '../features/business-admin/pages/ReservationsList';
+import { BusinessSettings } from '../features/business-admin/pages/BusinessSettings';
+import { ReservationsCalendar } from '../features/business-admin/pages/ReservationsCalendar';
+import { FloorEditor } from '../features/super-admin/pages/FloorEditor';
 
 // 🔀 Catch-all
 const RootRedirect = () => {
@@ -24,6 +34,8 @@ export const AppRoutes = () => {
       {/* 🌐 Públicas */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/negocio/:slug" element={<BusinessDetail />} />
+      <Route path="/reserva/:code" element={<ReservationConfirmation />} />
 
       {/* 🛡️ Super Admin */}
       <Route
@@ -34,14 +46,86 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+<Route
+  path="/super-admin/negocios"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <BusinessesList />
+    </ProtectedRoute>
+  }
+/>
       <Route
-        path="/super-admin/negocios"
-        element={
-          <ProtectedRoute allowedRoles={['super-admin']}>
-            <Placeholder title="Negocios Registrados" subtitle="Gestiona todos los negocios de la plataforma" />
-          </ProtectedRoute>
-        }
-      />
+  path="/super-admin/negocios/nuevo"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <BusinessForm />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <BusinessForm />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/zonas"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <ZonesList />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/zonas/nueva"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <ZoneForm />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/zonas/:zoneId"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <ZoneForm />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/zonas/:zoneId/mesas"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <TablesList />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/zonas/:zoneId/mesas/nueva"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <TableForm />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/zonas/:zoneId/mesas/:tableId"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <TableForm />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin/negocios/:id/editor"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <FloorEditor />
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/super-admin/usuarios"
         element={
@@ -76,30 +160,30 @@ export const AppRoutes = () => {
       />
 
       {/* 🏪 Business Admin */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <BusinessDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/reservas"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <Placeholder title="Citas y Reservas" subtitle="Gestiona las reservas de tus clientes" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/calendario"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <Placeholder title="Agenda / Horarios" subtitle="Configura tus horarios de atención" />
-          </ProtectedRoute>
-        }
-      />
+ <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <BusinessDashboard />
+    </ProtectedRoute>
+  }
+/>
+     <Route
+  path="/dashboard/reservas"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <ReservationsList />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/dashboard/calendario"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <ReservationsCalendar />
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/dashboard/mesas"
         element={
@@ -124,14 +208,14 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/dashboard/configuracion"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <Placeholder title="Ajustes del Negocio" subtitle="Configura los datos de tu negocio" />
-          </ProtectedRoute>
-        }
-      />
+  <Route
+  path="/dashboard/configuracion"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <BusinessSettings />
+    </ProtectedRoute>
+  }
+/>
 
       {/* 👤 Cliente */}
       <Route
