@@ -21,7 +21,13 @@ import { ReservationsList } from '../features/business-admin/pages/ReservationsL
 import { BusinessSettings } from '../features/business-admin/pages/BusinessSettings';
 import { ReservationsCalendar } from '../features/business-admin/pages/ReservationsCalendar';
 import { FloorEditor } from '../features/super-admin/pages/FloorEditor';
-
+import { UserReservations } from '../features/client-booking/pages/UserReservations';
+import { LookupReservation } from '../features/client-booking/pages/LookupReservation';
+import { UserProfile } from '../features/client-booking/pages/UserProfile';
+import { ExploreBusinesses } from '../features/client-booking/pages/ExploreBusinesses';
+import { TablesMap } from '../features/business-admin/pages/TablesMap';
+import { StaffList } from '../features/business-admin/pages/StaffList';
+import { MenuList } from '../features/business-admin/pages/MenuList';
 // 🔀 Catch-all
 const RootRedirect = () => {
   const { isAuthenticated, getHomeRoute } = useAuth();
@@ -36,6 +42,7 @@ export const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/negocio/:slug" element={<BusinessDetail />} />
       <Route path="/reserva/:code" element={<ReservationConfirmation />} />
+      <Route path="/mi-reserva" element={<LookupReservation />} />
 
       {/* 🛡️ Super Admin */}
       <Route
@@ -184,30 +191,30 @@ export const AppRoutes = () => {
     </ProtectedRoute>
   }
 />
-      <Route
-        path="/dashboard/mesas"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <Placeholder title="Mapa de Mesas" subtitle="Diseña la distribución de tu local" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/catalogo"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <Placeholder title="Catálogo / Menú" subtitle="Administra tus productos y servicios" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/equipo"
-        element={
-          <ProtectedRoute allowedRoles={['business-admin']}>
-            <Placeholder title="Personal / Atención" subtitle="Gestiona a tu equipo de trabajo" />
-          </ProtectedRoute>
-        }
-      />
+ <Route
+  path="/dashboard/mesas"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <TablesMap />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/dashboard/catalogo"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <MenuList />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/dashboard/equipo"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <StaffList />
+    </ProtectedRoute>
+  }
+/>
   <Route
   path="/dashboard/configuracion"
   element={
@@ -226,22 +233,22 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/user/reservas"
-        element={
-          <ProtectedRoute allowedRoles={['client']}>
-            <Placeholder title="Mis Reservas" subtitle="Consulta y gestiona tus reservas" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/user/explorar"
-        element={
-          <ProtectedRoute allowedRoles={['client']}>
-            <Placeholder title="Explorar Negocios" subtitle="Descubre nuevos lugares cerca de ti" />
-          </ProtectedRoute>
-        }
-      />
+<Route
+  path="/user/reservas"
+  element={
+    <ProtectedRoute allowedRoles={['client']}>
+      <UserReservations />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/user/explorar"
+  element={
+    <ProtectedRoute allowedRoles={['client']}>
+      <ExploreBusinesses />
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/user/favoritos"
         element={
@@ -250,14 +257,14 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/user/perfil"
-        element={
-          <ProtectedRoute allowedRoles={['client']}>
-            <Placeholder title="Mi Perfil" subtitle="Administra tu cuenta" />
-          </ProtectedRoute>
-        }
-      />
+   <Route
+  path="/user/perfil"
+  element={
+    <ProtectedRoute allowedRoles={['client']}>
+      <UserProfile />
+    </ProtectedRoute>
+  }
+/>
 
       {/* 🔀 Catch-all */}
       <Route path="*" element={<RootRedirect />} />

@@ -80,18 +80,25 @@ export const Home = () => {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('Todos');
+  const [publicStats, setPublicStats] = useState({ totalBusinesses: 0, totalCategories: 0 });
 
   const primaryBtn = useMagnetic();
   const ghostBtn = useMagnetic();
   const finalBtn = useMagnetic(0.25);
 
-  /* Carga de negocios reales desde Supabase */
+/* Carga de negocios reales desde Supabase */
 useEffect(() => {
   let alive = true;
   const load = async () => {
     try {
-      const data = await publicBusinessesService.list();
-      if (alive) setBusinesses(data);
+      const [data, stats] = await Promise.all([
+        publicBusinessesService.list(),
+        publicBusinessesService.getPublicStats(),
+      ]);
+      if (alive) {
+        setBusinesses(data);
+        setPublicStats(stats);
+      }
     } catch (err) {
       console.error('Error:', err);
       if (alive) setBusinesses([]);
@@ -225,10 +232,34 @@ useEffect(() => {
             </CTARow>
 
             <StatsRow>
-              <div className="stat"><strong><span className="stat-num" data-value="30">30</span>+</strong><span>negocios locales</span></div>
-              <div className="stat"><strong><span className="stat-num" data-value="12">12</span></strong><span>categorías</span></div>
-              <div className="stat"><strong><span className="stat-num" data-value="24">24</span>/7</strong><span>visibles en línea</span></div>
-            </StatsRow>
+  <div className="stat">
+    <strong>
+      <span
+        className="stat-num"
+        data-value={publicStats.totalBusinesses}
+      >
+        {publicStats.totalBusinesses}
+      </span>
+      +
+    </strong>
+    <span>negocios locales</span>
+  </div>
+  <div className="stat">
+    <strong>
+      <span
+        className="stat-num"
+        data-value={publicStats.totalCategories}
+      >
+        {publicStats.totalCategories}
+      </span>
+    </strong>
+    <span>categorías</span>
+  </div>
+  <div className="stat">
+    <strong>24/7</strong>
+    <span>visibles en línea</span>
+  </div>
+</StatsRow>
           </HeroInner>
         </HeroSection>
 

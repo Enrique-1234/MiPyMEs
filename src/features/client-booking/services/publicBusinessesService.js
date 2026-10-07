@@ -82,4 +82,27 @@ export const publicBusinessesService = {
     }
     return data || [];
   },
+    /**
+   * Estadísticas públicas: total de negocios activos y categorías.
+   */
+  async getPublicStats() {
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('id, type_id')
+      .eq('is_active', true)
+      .eq('is_verified', true);
+
+    if (error) {
+      console.warn('No se pudieron cargar stats:', error);
+      return { totalBusinesses: 0, totalCategories: 0 };
+    }
+
+    const businesses = data || [];
+    const uniqueCategories = new Set(businesses.map((b) => b.type_id).filter(Boolean));
+
+    return {
+      totalBusinesses: businesses.length,
+      totalCategories: uniqueCategories.size,
+    };
+  },
 };

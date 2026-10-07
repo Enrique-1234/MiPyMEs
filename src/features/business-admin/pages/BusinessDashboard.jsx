@@ -11,6 +11,8 @@ import { businessAdminService } from '../services/businessAdminService';
 import {
   StatsGrid, StatCard, SectionPanel, QuickList, EmptyState, EmptyBusiness,
 } from './BusinessDashboard.styles';
+import { WeeklyChart } from '../../../components/common/WeeklyChart/WeeklyChart';
+
 
 const NAV_LINKS = [
   { to: '/dashboard', icon: <Clock size={18} />, label: 'Inicio' },
@@ -31,6 +33,7 @@ export const BusinessDashboard = () => {
   const [upcoming, setUpcoming] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [allReservations, setAllReservations] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -49,6 +52,7 @@ export const BusinessDashboard = () => {
           ]);
           if (!alive) return;
           setStats(statsData);
+          setAllReservations(reservationsData);
 
           // Filtrar próximas reservas (futuras o de hoy, no canceladas)
           const now = new Date();
@@ -216,6 +220,18 @@ export const BusinessDashboard = () => {
               })}
             </QuickList>
           )}
+        </SectionPanel>
+
+        {/* ⬇️ NUEVO: Actividad de la semana — como hermano, no anidado */}
+        <SectionPanel>
+          <div className="panel-header">
+            <h3>Actividad de la semana</h3>
+          </div>
+          <WeeklyChart
+            reservations={allReservations}
+            parseRange={businessAdminService.parseRange}
+            timezone={business.timezone}
+          />
         </SectionPanel>
       </>
     );

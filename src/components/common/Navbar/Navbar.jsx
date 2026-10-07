@@ -91,6 +91,7 @@ export const Navbar = () => {
     { label: 'Inicio', to: '/' },
     { label: 'Negocios', to: '/#negocios' },
     { label: 'Cómo funciona', to: '/#como-funciona' },
+    { label: 'Mi reserva', to: '/mi-reserva' }, 
     user
       ? { label: 'Mi panel', to: dashboardRoute }
       : { label: 'Iniciar sesión', to: '/login' },
@@ -108,6 +109,7 @@ export const Navbar = () => {
         <NavLinksGroup>
           <a href="/#negocios">Negocios</a>
           <a href="/#como-funciona">Cómo funciona</a>
+          <a href="/mi-reserva">Mi reserva</a>
           <a href="/#unete">Para tu negocio</a>
         </NavLinksGroup>
 

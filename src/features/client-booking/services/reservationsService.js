@@ -107,4 +107,64 @@ export const reservationsService = {
     }
     return msg || 'Error al crear la reserva. Intenta de nuevo.';
   },
+    /**
+   * Lista las reservas del usuario logueado.
+   */
+  async listMyReservations() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
+
+    const { data, error } = await supabase
+      .from('reservations')
+      .select(`
+        id, confirmation_code, guest_name, guest_phone, guest_email,
+        party_size, during, status, special_requests, created_at,
+        business:businesses (id, name, slug, phone, address, city, timezone, logo_url),
+        floor:floors (id, name),
+        reservation_tables (
+          table_id, active,
+          table:tables (id, name, capacity)
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('during', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data || [];
+  },
+
+  /**
+   * Cancela una reserva propia.
+   * 1. Marca la reserva como cancelled
+   * 2. Desactiva las mesas asignadas (para liberar la constraint)
+   */
+  async cancelMyReservation(reservationId) {
+    const { error: resErr } = await supabase
+      .from('reservations')
+      .update({ status: 'cancelled' })
+      .eq('id', reservationId);
+
+    if (resErr) throw new Error(resErr.message);
+
+    const { error: rtErr } = await supabase
+      .from('reservation_tables')
+      .update({ active: false })
+      .eq('reservation_id', reservationId);
+
+    if (rtErr) {
+      console.warn('No se pudieron liberar las mesas:', rtErr);
+    }
+
+    return true;
+  },
+
+  /**
+   * Parsea un tstzrange string a { start, end } como Date.
+   * Ej: '[2026-10-10 17:30:00+00,2026-10-10 19:30:00+00)' → { start, end }
+   */
+  parseRange(range) {
+    const m = String(range).match(/[[(]([^,]+),([^)\]]+)[)\]]/);
+    if (!m) return { start: null, end: null };
+    return { start: new Date(m[1]), end: new Date(m[2]) };
+  },
 };

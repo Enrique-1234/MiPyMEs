@@ -9,6 +9,7 @@ import {
   DetailsGrid, Notice, Actions, PrimaryBtn, GhostBtn,
   LoadingWrapper, ErrorWrapper,
 } from './ReservationConfirmation.styles';
+import { toast } from '../../../utils/alerts';
 
 export const ReservationConfirmation = () => {
   const { code } = useParams();
@@ -132,16 +133,27 @@ export const ReservationConfirmation = () => {
             tu reserva. Si necesitas cancelar, comunícate directamente con el negocio.
           </Notice>
 
-          <Actions>
-            <PrimaryBtn as={Link} to={`/negocio/${reservation.business?.slug}`}>
-              <MapPin size={16} />
-              Ver el negocio
-            </PrimaryBtn>
-            <GhostBtn onClick={() => navigate('/')}>
-              <Home size={14} style={{ verticalAlign: '-2px', marginRight: '0.3rem' }} />
-              Volver al inicio
-            </GhostBtn>
-          </Actions>
+<Actions>
+  <PrimaryBtn as={Link} to={`/negocio/${reservation.business?.slug}`}>
+    <MapPin size={16} />
+    Ver el negocio
+  </PrimaryBtn>
+
+  <GhostBtn
+    onClick={() => {
+      const url = `${window.location.origin}/mi-reserva`;
+      navigator.clipboard.writeText(url);
+      toast.success('Enlace copiado. Guárdalo para consultar tu reserva después.');
+    }}
+  >
+    📋 Copiar enlace de consulta
+  </GhostBtn>
+
+  <GhostBtn onClick={() => navigate('/')}>
+    <Home size={14} style={{ verticalAlign: '-2px', marginRight: '0.3rem' }} />
+    Volver al inicio
+  </GhostBtn>
+</Actions>
         </Card>
       </PageWrapper>
     </>
