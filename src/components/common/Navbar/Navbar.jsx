@@ -15,7 +15,7 @@ import {
   LogoutButton,
   MenuButton
 } from './Navbar.styles';
-
+import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export const Navbar = () => {
@@ -113,29 +113,33 @@ export const Navbar = () => {
           <a href="/#unete">Para tu negocio</a>
         </NavLinksGroup>
 
-        <NavActionsGroup>
-          {user ? (
-            <>
-              <NavButton to={dashboardRoute} $primary={true}>
-                Mi Panel ({user.name || user.email})
-              </NavButton>
-              <LogoutButton onClick={handleLogout}>Cerrar sesión</LogoutButton>
-            </>
-          ) : (
-            <>
-              <NavButton to="/login">Iniciar sesión</NavButton>
-              <NavButton to="/registro" $primary={true}>Registrarse</NavButton>
-            </>
-          )}
-          <MenuButton
-            aria-label="Abrir menú"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
-          >
-            <span />
-            <span />
-          </MenuButton>
-        </NavActionsGroup>
+<NavActionsGroup>
+      {user ? (
+        <>
+          <NavButton to={dashboardRoute} $primary={true}>
+            Mi Panel ({user.name || user.email})
+          </NavButton>
+          <LogoutButton onClick={handleLogout}>Cerrar sesión</LogoutButton>
+        </>
+      ) : (
+        <>
+          <NavButton to="/login">Iniciar sesión</NavButton>
+          <NavButton to="/registro" $primary={true}>Registrarse</NavButton>
+            <NavButton to="/registro-negocio" $primary="true">Soy negocio</NavButton>
+        </>
+      )}
+
+      <ThemeToggle />
+
+      <MenuButton
+        aria-label="Abrir menú"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen(true)}
+      >
+        <span />
+        <span />
+      </MenuButton>
+    </NavActionsGroup>
 
         <NavProgress ref={barRef} aria-hidden="true" />
       </NavHeader>

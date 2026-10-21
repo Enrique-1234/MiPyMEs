@@ -254,16 +254,6 @@ export const Login = () => {
               {loading && <span className="spinner" />}
               {loading ? 'Entrando…' : 'Entrar'}
             </SubmitBtn>
-
-            {/* 💡 Ayuda temporal para probar los 3 roles mientras no hay Supabase */}
-            {import.meta.env.DEV && (
-              <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', lineHeight: 1.7 }}>
-                <strong>Cuentas de prueba:</strong><br />
-                super@alpunto.com / super123<br />
-                barberia@alpunto.com / barberia123<br />
-                cliente@test.com / cliente123
-              </div>
-            )}
           </FormCard>
         </FormSide>
       </Wrapper>

@@ -1,16 +1,25 @@
-// src/features/client-booking/pages/ExploreBusinesses.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Clock, Calendar, Search, Heart, User as UserIcon,
-  MapPin, Phone, Store,
-} from 'lucide-react';
+import { Clock, Calendar, Search, Heart, User as UserIcon, MapPin, Phone, Store, } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { DashboardLayout } from '../../../components/common/DashboardLayout/DashboardLayout';
 import { publicBusinessesService } from '../services/publicBusinessesService';
+import { favoritesService } from '../services/favoritesService';
+import { toast } from '../../../utils/alerts';
+import { supabase } from '../../../services/supabaseClient';
+
 import {
-  Toolbar, SearchInput, SearchWrapper, FilterSelect, CardsGrid,
-  BusinessCard, CardImage, CardBody, EmptyState, LoadingState, ErrorBox,
+  Toolbar,
+  SearchInput,
+  SearchWrapper,
+  FilterSelect,
+  CardsGrid,
+  BusinessCard,
+  CardImage,
+  CardBody,
+  EmptyState,
+  LoadingState,
+  ErrorBox,
 } from './ExploreBusinesses.styles';
 
 const NAV_LINKS = [
@@ -30,46 +39,133 @@ export const ExploreBusinesses = () => {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
 
+  // Cargar negocios disponibles.
   useEffect(() => {
     let alive = true;
-    const load = async () => {
+
+    const loadBusinesses = async () => {
       setLoading(true);
       setError('');
+
       try {
         const data = await publicBusinessesService.list();
-        if (alive) setBusinesses(data);
+
+        if (alive) {
+          setBusinesses(data);
+        }
       } catch (err) {
-        if (alive) setError(err.message);
+        if (alive) {
+          setError(err.message || 'No se pudieron cargar los negocios.');
+        }
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+        }
       }
     };
-    load();
-    return () => { alive = false; };
+
+    loadBusinesses();
+
+    return () => {
+      alive = false;
+    };
   }, []);
+
+  // Cargar los favoritos guardados del usuario autenticado.
+  useEffect(() => {
+    let alive = true;
+
+    const loadFavorites = async () => {
+      try {
+        const {
+          data: { user: authUser },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError) throw authError;
+        if (!authUser) return;
+
+        const { data, error: favoritesError } = await supabase
+          .from('favorites')
+          .select('business_id')
+          .eq('user_id', authUser.id);
+
+        if (favoritesError) throw favoritesError;
+
+        if (alive && data) {
+          setFavoriteIds(
+            new Set(data.map((favorite) => favorite.business_id))
+          );
+        }
+      } catch (err) {
+        console.error('Error al cargar favoritos:', err);
+      }
+    };
+
+    loadFavorites();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Agregar o quitar un negocio de favoritos.
+  const handleToggleFavorite = async (e, businessId) => {
+    e.stopPropagation();
+
+    try {
+      const isFavorite = await favoritesService.toggleFavorite(businessId);
+
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+
+        if (isFavorite) {
+          next.add(businessId);
+        } else {
+          next.delete(businessId);
+        }
+
+        return next;
+      });
+
+      toast.success(
+        isFavorite
+          ? 'Guardado en favoritos'
+          : 'Eliminado de favoritos'
+      );
+    } catch (err) {
+      toast.error(err.message || 'No se pudo actualizar el favorito');
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
 
-  // Lista única de categorías
+  // Lista única de categorías.
   const categories = useMemo(() => {
-    const set = new Set(businesses.map((b) => b.category).filter(Boolean));
-    return Array.from(set).sort();
+    const categorySet = new Set(
+      businesses.map((business) => business.category).filter(Boolean)
+    );
+
+    return Array.from(categorySet).sort();
   }, [businesses]);
 
-  // Filtrar
+  // Filtrar negocios por nombre, descripción y categoría.
   const filtered = useMemo(() => {
-    return businesses.filter((b) => {
+    return businesses.filter((business) => {
+      const searchTerm = search.trim().toLowerCase();
+
       const matchSearch =
-        !search.trim() ||
-        b.name?.toLowerCase().includes(search.toLowerCase()) ||
-        b.description?.toLowerCase().includes(search.toLowerCase());
+        !searchTerm ||
+        business.name?.toLowerCase().includes(searchTerm) ||
+        business.description?.toLowerCase().includes(searchTerm);
 
       const matchCategory =
-        !categoryFilter || b.category === categoryFilter;
+        !categoryFilter || business.category === categoryFilter;
 
       return matchSearch && matchCategory;
     });
@@ -86,7 +182,10 @@ export const ExploreBusinesses = () => {
           </div>
         </>
       }
-      navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/user/explorar' }))}
+      navLinks={NAV_LINKS.map((link) => ({
+        ...link,
+        active: link.to === '/user/explorar',
+      }))}
       user={user}
       onLogout={handleLogout}
       headerTitle="Explorar Negocios"
@@ -101,6 +200,7 @@ export const ExploreBusinesses = () => {
           <Toolbar>
             <SearchWrapper>
               <Search size={16} />
+
               <SearchInput
                 type="text"
                 placeholder="Buscar por nombre o descripción..."
@@ -108,13 +208,17 @@ export const ExploreBusinesses = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </SearchWrapper>
+
             <FilterSelect
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
               <option value="">Todas las categorías</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
+
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </FilterSelect>
           </Toolbar>
@@ -132,49 +236,102 @@ export const ExploreBusinesses = () => {
 
           {filtered.length > 0 && (
             <CardsGrid>
-              {filtered.map((b) => (
-                <BusinessCard
-                  key={b.id}
-                  onClick={() => navigate(`/negocio/${b.slug}`)}
-                >
-                  <CardImage $url={b.cover_url}>
-                    {!b.cover_url && (
-                      <span className="initial">
-                        {b.name?.[0]?.toUpperCase() || 'A'}
-                      </span>
-                    )}
-                    <div
-                      className="logo-overlay"
-                      style={b.logo_url ? { backgroundImage: `url(${b.logo_url})` } : {}}
-                    >
-                      {!b.logo_url && (b.name?.[0]?.toUpperCase() || 'A')}
-                    </div>
-                  </CardImage>
+              {filtered.map((business) => {
+                const isFavorite = favoriteIds.has(business.id);
 
-                  <CardBody>
-                    <h3>{b.name}</h3>
-                    {b.category && (
-                      <span className="category">
-                        📂 {b.category}
-                      </span>
-                    )}
-                    <p className="description">{b.description}</p>
-
-                    <div className="meta">
-                      {b.city && (
-                        <span>
-                          <MapPin size={12} /> {b.city}
+                return (
+                  <BusinessCard
+                    key={business.id}
+                    onClick={() =>
+                      navigate(`/negocio/${business.slug}`)
+                    }
+                  >
+                    <CardImage $url={business.cover_url}>
+                      {!business.cover_url && (
+                        <span className="initial">
+                          {business.name?.[0]?.toUpperCase() || 'A'}
                         </span>
                       )}
-                      {b.phone && (
-                        <span>
-                          <Phone size={12} /> {b.phone}
+
+                      <button
+                        type="button"
+                        aria-label={
+                          isFavorite
+                            ? `Quitar ${business.name} de favoritos`
+                            : `Agregar ${business.name} a favoritos`
+                        }
+                        aria-pressed={isFavorite}
+                        onClick={(e) =>
+                          handleToggleFavorite(e, business.id)
+                        }
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          zIndex: 2,
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          backdropFilter: 'blur(4px)',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '36px',
+                          height: '36px',
+                          display: 'grid',
+                          placeItems: 'center',
+                          cursor: 'pointer',
+                          color: isFavorite ? '#EF4444' : '#fff',
+                        }}
+                      >
+                        <Heart
+                          size={18}
+                          fill={isFavorite ? '#EF4444' : 'none'}
+                        />
+                      </button>
+
+                      <div
+                        className="logo-overlay"
+                        style={
+                          business.logo_url
+                            ? {
+                                backgroundImage: `url(${business.logo_url})`,
+                              }
+                            : {}
+                        }
+                      >
+                        {!business.logo_url &&
+                          (business.name?.[0]?.toUpperCase() || 'A')}
+                      </div>
+                    </CardImage>
+
+                    <CardBody>
+                      <h3>{business.name}</h3>
+
+                      {business.category && (
+                        <span className="category">
+                          📂 {business.category}
                         </span>
                       )}
-                    </div>
-                  </CardBody>
-                </BusinessCard>
-              ))}
+
+                      <p className="description">
+                        {business.description}
+                      </p>
+
+                      <div className="meta">
+                        {business.city && (
+                          <span>
+                            <MapPin size={12} /> {business.city}
+                          </span>
+                        )}
+
+                        {business.phone && (
+                          <span>
+                            <Phone size={12} /> {business.phone}
+                          </span>
+                        )}
+                      </div>
+                    </CardBody>
+                  </BusinessCard>
+                );
+              })}
             </CardsGrid>
           )}
         </>

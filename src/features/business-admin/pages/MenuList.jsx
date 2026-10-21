@@ -15,16 +15,7 @@ import {
   ItemsList, ItemRow, EmptyCategory, EmptyState, LoadingState, ErrorBox,
   Badge, ModalOverlay, ModalCard, FieldGroup, ModalActions, GhostButton,
 } from './MenuList.styles';
-
-const NAV_LINKS = [
-  { to: '/dashboard', icon: <Clock size={18} />, label: 'Inicio' },
-  { to: '/dashboard/reservas', icon: <Calendar size={18} />, label: 'Citas y Reservas' },
-  { to: '/dashboard/calendario', icon: <Clock size={18} />, label: 'Agenda / Horarios' },
-  { to: '/dashboard/mesas', icon: <Grid size={18} />, label: 'Mapa de Mesas' },
-  { to: '/dashboard/catalogo', icon: <ShoppingBag size={18} />, label: 'Catálogo / Menú' },
-  { to: '/dashboard/equipo', icon: <Users size={18} />, label: 'Personal / Atención' },
-  { to: '/dashboard/configuracion', icon: <Settings size={18} />, label: 'Ajustes del Negocio' },
-];
+import { getBusinessNavLinks } from '../utils/navLinks';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-MX', {
@@ -197,7 +188,7 @@ export const MenuList = () => {
     return (
       <DashboardLayout
         sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
-        navLinks={NAV_LINKS}
+        navLinks={getBusinessNavLinks(business, '/dashboard/catalogo')} 
         user={user}
         onLogout={handleLogout}
         headerTitle="Catálogo / Menú"
@@ -208,11 +199,11 @@ export const MenuList = () => {
     );
   }
 
-  if (!business) {
+   if (!business) {
     return (
       <DashboardLayout
         sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
-        navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/catalogo' }))}
+        navLinks={getBusinessNavLinks(business, '/dashboard/catalogo')} 
         user={user}
         onLogout={handleLogout}
         headerTitle="Catálogo / Menú"
@@ -234,8 +225,7 @@ export const MenuList = () => {
   return (
     <DashboardLayout
       sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">{business.name}</span></div></>}
-      navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/catalogo' }))}
-      user={user}
+      navLinks={getBusinessNavLinks(business, '/dashboard/catalogo')}      user={user}
       onLogout={handleLogout}
       headerTitle="Catálogo / Menú"
       headerSubtitle={`${categories.length} categoría${categories.length !== 1 ? 's' : ''} · ${totalItems} platillo${totalItems !== 1 ? 's' : ''}`}

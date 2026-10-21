@@ -178,11 +178,14 @@ export const MainContent = styled.main`
 export const Header = styled.header`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Alinea los elementos al inicio superior */
   margin-bottom: 2rem;
   gap: 1rem;
 
   .header-titles {
+    min-width: 0; /* Permite que los textos largos se ajusten/trunquen sin desbordar el flex item */
+    flex: 1;
+
     h1 {
       font-size: 1.875rem;
       font-weight: 800;
@@ -193,6 +196,7 @@ export const Header = styled.header`
         font-size: 1.5rem;
       }
     }
+
     p {
       font-size: 0.875rem;
       color: ${({ theme }) => theme.colors.textSoft};

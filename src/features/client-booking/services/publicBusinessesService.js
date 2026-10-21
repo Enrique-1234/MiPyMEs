@@ -44,7 +44,7 @@ export const publicBusinessesService = {
   },
 
   /**
-   * Obtiene un negocio por slug (para la página de detalle futura).
+   * Obtiene un negocio por slug (para la página de detalle).
    */
   async getBySlug(slug) {
     const { data, error } = await supabase
@@ -65,24 +65,80 @@ export const publicBusinessesService = {
     if (error) throw new Error(error.message);
     return data;
   },
-    /**
+
+  /**
    * Consulta disponibilidad de un negocio para una fecha y tamaño de grupo.
-   * Usa la función RPC `get_availability` de Supabase.
    */
   async getAvailability(businessId, date, partySize) {
-    const { data, error } = await supabase.rpc('get_availability', {
-      p_business_id: businessId,
-      p_date: date,
-      p_party_size: partySize,
-    });
+    // 1. Verificamos qué tipo de negocio es para saber si usar mesas o no
+    const { data: business } = await supabase
+      .from('businesses')
+      .select('type_id')
+      .eq('id', businessId)
+      .single();
 
-    if (error) {
-      console.error('Error consultando disponibilidad:', error);
-      throw new Error('No se pudo consultar la disponibilidad');
+    const isTableBased = business?.type_id === 'restaurante' || business?.type_id === 'eventos';
+
+    if (isTableBased) {
+      // Si es restaurante, usamos la lógica de mesas original
+      const { data, error } = await supabase.rpc('get_availability', {
+        p_business_id: businessId,
+        p_date: date,
+        p_party_size: partySize,
+      });
+      if (error) throw new Error('No se pudo consultar la disponibilidad');
+      return data || [];
+    } else {
+      // ==========================================
+      // LÓGICA PARA CITAS (Barbería, Veterinaria)
+      // ==========================================
+      
+      // 🎯 FIX TIMEZONE: Parsear la fecha manualmente para evitar saltos de día
+      const [year, month, day] = date.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day);
+      const dayOfWeek = localDate.getDay();
+
+      const { data: hours } = await supabase
+        .from('business_hours')
+        .select('opens_at, closes_at, is_closed')
+        .eq('business_id', businessId)
+        .eq('day_of_week', dayOfWeek)
+        .maybeSingle();
+
+      if (!hours || hours.is_closed) return [];
+
+      // Parsear la hora de apertura y cierre
+      const [openH, openM] = hours.opens_at.split(':').map(Number);
+      const [closeH, closeM] = hours.closes_at.split(':').map(Number);
+
+      // Crear fechas locales reales (evita que UTC mueva el día)
+      let current = new Date(year, month - 1, day, openH, openM, 0);
+      const end = new Date(year, month - 1, day, closeH, closeM, 0);
+
+      const slots = [];
+      // 👇 Duración de cada cita en minutos (60 = 1 hora)
+      const DURATION_MINUTES = 60; 
+
+      while (current < end) {
+        const next = new Date(current.getTime() + DURATION_MINUTES * 60000); 
+        
+        // Solo agregar si el bloque cabe antes de cerrar
+        if (next <= end) {
+          slots.push({
+            slot_start: current.toISOString(),
+            slot_end: next.toISOString(),
+            available_table_ids: [], // No hay mesas
+            available_merge_ids: [],
+          });
+        }
+        current = next;
+      }
+      
+      return slots;
     }
-    return data || [];
   },
-    /**
+
+  /**
    * Estadísticas públicas: total de negocios activos y categorías.
    */
   async getPublicStats() {

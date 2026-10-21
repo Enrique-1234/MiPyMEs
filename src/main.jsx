@@ -8,3 +8,15 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+// src/main.jsx
+import { registerSW } from 'virtual:pwa-register';
+
+// Registra el service worker
+registerSW({
+  onNeedRefresh() {
+    console.log('Nueva versión disponible. Recarga para actualizar.');
+  },
+  onOfflineReady() {
+    console.log('AlPunto está lista para funcionar offline.');
+  },
+});

@@ -10,14 +10,11 @@ const ROLES = [
 export const staffService = {
   ROLES,
 
-  /**
-   * Lista el staff del negocio con sus perfiles.
-   */
   async listByBusiness(businessId) {
     const { data, error } = await supabase
       .from('business_staff')
       .select(`
-        id, role, is_active, created_at,
+        id, role, is_active, created_at, position, salary, phone, invited_email,
         profile:profiles (id, email, name, avatar_url, phone)
       `)
       .eq('business_id', businessId)
@@ -27,18 +24,10 @@ export const staffService = {
     return data || [];
   },
 
-  /**
-   * Cambia el rol de un empleado.
-   */
-  async updateRole(staffId, role) {
-    const VALID = ['owner', 'manager', 'staff'];
-    if (!VALID.includes(role)) {
-      throw new Error('Rol no válido');
-    }
-
+  async updateMember(staffId, payload) {
     const { data, error } = await supabase
       .from('business_staff')
-      .update({ role })
+      .update(payload)
       .eq('id', staffId)
       .select()
       .single();
@@ -47,24 +36,6 @@ export const staffService = {
     return data;
   },
 
-  /**
-   * Activa/desactiva un empleado.
-   */
-  async toggleActive(staffId, isActive) {
-    const { data, error } = await supabase
-      .from('business_staff')
-      .update({ is_active: isActive })
-      .eq('id', staffId)
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  },
-
-  /**
-   * Elimina a un empleado del negocio (no borra su cuenta).
-   */
   async remove(staffId) {
     const { error } = await supabase
       .from('business_staff')
@@ -76,44 +47,43 @@ export const staffService = {
   },
 
   /**
-   * Busca un usuario por email en la tabla profiles.
-   * Se usa para invitarlo al equipo.
+   * Agrega o invita a un empleado.
    */
-  async findUserByEmail(email) {
-    const clean = String(email).trim().toLowerCase();
-    if (!clean) return null;
+  async addMember(businessId, payload) {
+    const email = payload.email.trim().toLowerCase();
 
-    const { data, error } = await supabase
+    // 1. Buscar si el usuario ya existe en los perfiles
+    const { data: existingProfile } = await supabase
       .from('profiles')
-      .select('id, email, name, avatar_url')
-      .eq('email', clean)
+      .select('id, email, name')
+      .eq('email', email)
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
-    return data;
-  },
+    const isRegistered = !!existingProfile;
 
-  /**
-   * Agrega un usuario existente al equipo del negocio.
-   */
-  async addMember(businessId, userId, role = 'staff') {
+    // 2. Insertar en business_staff
     const { data, error } = await supabase
       .from('business_staff')
       .insert({
         business_id: businessId,
-        user_id: userId,
-        role,
+        user_id: existingProfile?.id || null,
+        invited_email: isRegistered ? null : email,
+        role: payload.role || 'staff',
+        position: payload.position || null,
+        salary: payload.salary ? parseFloat(payload.salary) : null,
+        phone: payload.phone || null,
         is_active: true,
       })
       .select()
       .single();
 
     if (error) {
-      if (error.message.includes('duplicate key')) {
-        throw new Error('Este usuario ya forma parte del equipo');
+      if (error.code === '23505') { // unique violation
+        throw new Error('Este usuario ya forma parte del equipo.');
       }
       throw new Error(error.message);
     }
-    return data;
-  },
+
+    return { ...data, isRegistered };
+  }
 };

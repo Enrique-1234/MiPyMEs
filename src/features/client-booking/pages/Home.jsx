@@ -110,6 +110,31 @@ useEffect(() => {
   return () => { alive = false; };
 }, []);
 
+/* Animación de contadores — espera a que los datos reales carguen */
+useEffect(() => {
+  if (prefersReduced()) return;
+  if (!publicStats.totalBusinesses && !publicStats.totalCategories) return;
+
+  const ctx = gsap.context(() => {
+    gsap.utils.toArray('.stat-num').forEach((el) => {
+      const target = Number(el.dataset.value) || 0;
+      if (target === 0) {
+        el.textContent = '0';
+        return;
+      }
+      const o = { v: 0 };
+      gsap.to(o, {
+        v: target,
+        duration: 2,
+        ease: 'power2.out',
+        onUpdate: () => { el.textContent = Math.round(o.v); },
+      });
+    });
+  }, heroRef);
+
+  return () => ctx.revert();
+}, [publicStats]);
+
   /* Scroll suave */
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
@@ -133,11 +158,12 @@ useEffect(() => {
     gsap.to('.pin-group', { y: -8, duration: 1.8, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.6 });
     gsap.fromTo('.ripple', { scale: 0.3, opacity: 0.8, transformOrigin: '50% 50%' },
       { scale: 1.7, opacity: 0, duration: 2.2, ease: 'power1.out', repeat: -1, stagger: 0.7, delay: 1.4 });
-
+/*
     gsap.utils.toArray('.stat-num').forEach((el) => {
       const o = { v: 0 };
       gsap.to(o, { v: Number(el.dataset.value), duration: 2, ease: 'power2.out', delay: 1.2, onUpdate: () => { el.textContent = Math.round(o.v); } });
     });
+    */
 
     gsap.fromTo('.steps-line-fill', { scaleX: 0 }, {
       scaleX: 1, ease: 'none',
@@ -228,9 +254,8 @@ useEffect(() => {
 
             <CTARow className="hero-cta">
               <CTAButton className="hero-cta-item" ref={primaryBtn} href="#negocios">Explorar negocios</CTAButton>
-              <CTAButton className="hero-cta-item" ref={ghostBtn} href="/registro" $variant="ghost">Registrar mi negocio</CTAButton>
-            </CTARow>
-
+              <CTAButton className="hero-cta-item" ref={ghostBtn} href="/registro-negocio" $variant="ghost">Registrar mi negocio</CTAButton>            
+                </CTARow>
             <StatsRow>
   <div className="stat">
     <strong>
@@ -306,8 +331,7 @@ useEffect(() => {
         <FinalCTA id="unete" className="final-cta">
           <h2>Haz que te encuentren AlPunto</h2>
           <p>Registra tu negocio gratis y aparece frente a los clientes que ya te están buscando.</p>
-          <a ref={finalBtn} href="/registro">Registrar mi negocio</a>
-        </FinalCTA>
+          <a ref={finalBtn} href="/registro-negocio">Registrar mi negocio</a>        </FinalCTA>
       </HomeContainer>
     </>
   );

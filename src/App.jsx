@@ -1,12 +1,15 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { theme } from './styles/theme';
 import { GlobalStyles } from './styles/GlobalStyles';
+import { AppThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { AppRoutes } from './routes/AppRoutes';
 
-export default function App() {
+// Componente interno que consume el tema actual
+function ThemedApp() {
+  const { theme } = useTheme();
+
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
@@ -16,5 +19,13 @@ export default function App() {
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AppThemeProvider>
+      <ThemedApp />
+    </AppThemeProvider>
   );
 }

@@ -14,18 +14,22 @@ export const GlobalStyles = createGlobalStyle`
     padding: 0;
   }
 
-  body {
+body {
     font-family: ${({ theme }) => theme.fonts?.body || 'system-ui, sans-serif'};
     background-color: ${({ theme }) => theme.colors.background};
-    background-image:
-      radial-gradient(circle at 15% 0%, rgba(255, 107, 0, 0.18), transparent 45%),
-      radial-gradient(circle at 85% 100%, rgba(255, 46, 147, 0.12), transparent 50%);
+    background-image: ${({ theme }) =>
+      theme.mode === 'light'
+        ? `radial-gradient(circle at 15% 0%, rgba(255, 107, 0, 0.06), transparent 45%),
+           radial-gradient(circle at 85% 100%, rgba(255, 46, 147, 0.04), transparent 50%)`
+        : `radial-gradient(circle at 15% 0%, rgba(255, 107, 0, 0.18), transparent 45%),
+           radial-gradient(circle at 85% 100%, rgba(255, 46, 147, 0.12), transparent 50%)`};
     background-attachment: fixed;
     color: ${({ theme }) => theme.colors.text};
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4 {
@@ -43,17 +47,22 @@ export const GlobalStyles = createGlobalStyle`
     color: transparent;
   }
 
-  h2 { font-size: clamp(1.75rem, 4vw, 3rem); }
-  h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); color: ${({ theme }) => theme.colors.primary}; }
+  h2 { 
+    font-size: clamp(1.75rem, 4vw, 3rem); 
+  }
+
+  h3 { 
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem); 
+    color: ${({ theme }) => theme.colors.primary}; 
+  }
 
   a {
     color: inherit;
     text-decoration: none;
     transition: color ${({ theme }) => theme.transitions?.fast || '150ms ease'};
 
-    &:hover { color: ${({ theme }) => theme.colors.primary}; }
-  }
-
+    &:hover { 
+      color: ${({ theme }) => theme.colors.primary};
   button {
     font-family: inherit;
     cursor: pointer;

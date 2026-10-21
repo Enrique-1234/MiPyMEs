@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
-
+import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 import {
   LayoutWrapper,
   SidebarOverlay,
@@ -123,6 +123,7 @@ export const DashboardLayout = ({
             <h1>{headerTitle}</h1>
             <p>{headerSubtitle}</p>
           </div>
+          <ThemeToggle />
         </Header>
         {children}
       </MainContent>

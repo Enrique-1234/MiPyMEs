@@ -1,30 +1,16 @@
 // src/features/business-admin/pages/BusinessSettings.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard, Calendar, Clock, ShoppingBag, Grid, Users, Settings,
-  Save, AlertCircle,
-} from 'lucide-react';
+import { Save, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { DashboardLayout } from '../../../components/common/DashboardLayout/DashboardLayout';
 import { businessAdminService } from '../services/businessAdminService';
 import { supabase } from '../../../services/supabaseClient';
-import {
-  FormCard, FieldGroup, Row, ToggleRow, ActionsRow,
-  PrimaryButton, ErrorBox, LoadingState,
-} from '../../super-admin/pages/BusinessForm.styles';
-import { SectionPanel, EmptyState } from './BusinessDashboard.styles';
 import { toast } from '../../../utils/alerts';
-
-const NAV_LINKS = [
-  { to: '/dashboard', icon: <Clock size={18} />, label: 'Inicio' },
-  { to: '/dashboard/reservas', icon: <Calendar size={18} />, label: 'Citas y Reservas' },
-  { to: '/dashboard/calendario', icon: <Clock size={18} />, label: 'Agenda / Horarios' },
-  { to: '/dashboard/mesas', icon: <Grid size={18} />, label: 'Mapa de Mesas' },
-  { to: '/dashboard/catalogo', icon: <ShoppingBag size={18} />, label: 'Catálogo / Menú' },
-  { to: '/dashboard/equipo', icon: <Users size={18} />, label: 'Personal / Atención' },
-  { to: '/dashboard/configuracion', icon: <Settings size={18} />, label: 'Ajustes del Negocio' },
-];
+import { getBusinessNavLinks } from '../utils/navLinks';
+import { FormCard, FieldGroup, Row, ToggleRow, ActionsRow, PrimaryButton, ErrorBox, LoadingState,} from '../../super-admin/pages/BusinessForm.styles';
+import { EmptyState } from './BusinessDashboard.styles';
+import { ImageUploader } from '../../../components/common/ImageUploader/ImageUploader';
 
 const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -38,7 +24,6 @@ export const BusinessSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -109,7 +94,6 @@ export const BusinessSettings = () => {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (success) setSuccess(false);
   };
 
   const updateHour = (dayOfWeek, field, value) => {
@@ -126,7 +110,6 @@ export const BusinessSettings = () => {
     }
     setSaving(true);
     setError('');
-    toast.success('Cambios guardados');
 
     try {
       // 1. Actualizar datos del negocio
@@ -174,10 +157,10 @@ export const BusinessSettings = () => {
         .insert(hoursToInsert);
       if (insErr) throw new Error(insErr.message);
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 4000);
+      toast.success('Cambios guardados correctamente');
     } catch (err) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setSaving(false);
     }
@@ -187,7 +170,7 @@ export const BusinessSettings = () => {
     return (
       <DashboardLayout
         sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
-        navLinks={NAV_LINKS}
+        navLinks={[]}
         user={user}
         onLogout={handleLogout}
         headerTitle="Ajustes del Negocio"
@@ -202,7 +185,7 @@ export const BusinessSettings = () => {
     return (
       <DashboardLayout
         sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
-        navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/configuracion' }))}
+        navLinks={getBusinessNavLinks(null, '/dashboard/configuracion')} 
         user={user}
         onLogout={handleLogout}
         headerTitle="Ajustes del Negocio"
@@ -227,7 +210,7 @@ export const BusinessSettings = () => {
           </div>
         </>
       }
-      navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/configuracion' }))}
+      navLinks={getBusinessNavLinks(business, '/dashboard/configuracion')}
       user={user}
       onLogout={handleLogout}
       headerTitle="Ajustes del Negocio"
@@ -236,7 +219,6 @@ export const BusinessSettings = () => {
       <FormCard onSubmit={handleSubmit}>
         {error && <ErrorBox>⚠️ {error}</ErrorBox>}
 
-    
         <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.5rem' }}>
           Información del negocio
         </h3>
@@ -253,6 +235,41 @@ export const BusinessSettings = () => {
           />
         </FieldGroup>
 
+{/* Fotos del negocio */}
+<div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '1.5rem', marginBottom: '1rem' }}>
+  <div>
+    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-soft)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+      Logo
+    </label>
+    <ImageUploader
+      businessId={business.id}
+      kind="logo"
+      aspect="square"
+      currentUrl={business.logo_url}
+      onUploaded={async (url) => {
+        // Guardar en BD
+        await supabase.from('businesses').update({ logo_url: url }).eq('id', business.id);
+        // Actualizar estado local
+        setBusiness(prev => ({ ...prev, logo_url: url }));
+      }}
+    />
+  </div>
+  <div>
+    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-soft)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+      Portada
+    </label>
+    <ImageUploader
+      businessId={business.id}
+      kind="cover"
+      aspect="wide"
+      currentUrl={business.cover_url}
+      onUploaded={async (url) => {
+        await supabase.from('businesses').update({ cover_url: url }).eq('id', business.id);
+        setBusiness(prev => ({ ...prev, cover_url: url }));
+      }}
+    />
+  </div>
+</div>
         <FieldGroup>
           <label htmlFor="description">Descripción</label>
           <textarea
@@ -427,8 +444,8 @@ export const BusinessSettings = () => {
                 alignItems: 'center',
                 padding: '0.75rem',
                 borderRadius: '10px',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(148, 163, 184, 0.05)',
+                border: '1px solid rgba(148, 163, 184, 0.15)',
               }}
             >
               <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>
@@ -443,7 +460,7 @@ export const BusinessSettings = () => {
                   padding: '0.5rem',
                   borderRadius: '8px',
                   background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(148, 163, 184, 0.3)',
                   color: 'inherit',
                 }}
               />
@@ -456,7 +473,7 @@ export const BusinessSettings = () => {
                   padding: '0.5rem',
                   borderRadius: '8px',
                   background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(148, 163, 184, 0.3)',
                   color: 'inherit',
                 }}
               />

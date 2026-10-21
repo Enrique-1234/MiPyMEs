@@ -13,16 +13,8 @@ import {
   EmptyDay, ReservationChip, LoadingState, ErrorBox,
   ModalOverlay, ModalCard, DetailRow, ModalActions,
 } from './ReservationsCalendar.styles';
+import { getBusinessNavLinks } from '../utils/navLinks';
 
-const NAV_LINKS = [
-  { to: '/dashboard', icon: <Clock size={18} />, label: 'Inicio' },
-  { to: '/dashboard/reservas', icon: <Calendar size={18} />, label: 'Citas y Reservas' },
-  { to: '/dashboard/calendario', icon: <Clock size={18} />, label: 'Agenda / Horarios' },
-  { to: '/dashboard/mesas', icon: <Grid size={18} />, label: 'Mapa de Mesas' },
-  { to: '/dashboard/catalogo', icon: <ShoppingBag size={18} />, label: 'Catálogo / Menú' },
-  { to: '/dashboard/equipo', icon: <Users size={18} />, label: 'Personal / Atención' },
-  { to: '/dashboard/configuracion', icon: <Settings size={18} />, label: 'Ajustes del Negocio' },
-];
 
 const DAY_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTH_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -210,7 +202,7 @@ export const ReservationsCalendar = () => {
           </div>
         </>
       }
-      navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/calendario' }))}
+      navLinks={getBusinessNavLinks(business, '/dashboard/calendario')}
       user={user}
       onLogout={handleLogout}
       headerTitle="Agenda Semanal"

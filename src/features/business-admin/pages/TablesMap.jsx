@@ -3,29 +3,27 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Clock, Calendar, Users, ShoppingBag, Grid, Settings,
-  Lock, Eye, Store,
+  Lock, Eye, Store, Plus, Trash2, Edit2, LayoutDashboard
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { DashboardLayout } from '../../../components/common/DashboardLayout/DashboardLayout';
 import { businessAdminService } from '../services/businessAdminService';
 import { zonesService } from '../../../features/super-admin/services/zonesService';
 import { tablesService } from '../../../features/super-admin/services/tablesService';
+import { toast, confirmDialog } from '../../../utils/alerts';
+import { getBusinessNavLinks } from '../utils/navLinks';
 import {
   Toolbar, ZoneSelect, Legend, CanvasOuter, Canvas,
   EmptyCanvasMessage, TableShape, StatsRow,
   LoadingState, EmptyState, ErrorBox,
   ModalOverlay, ModalCard, DetailRow,
 } from './TablesMap.styles';
+// Importamos estilos de formularios para el modal
+import {
+  PrimaryButton, GhostButton, FieldGroup, ModalActions
+} from './MenuList.styles';
 
-const NAV_LINKS = [
-  { to: '/dashboard', icon: <Clock size={18} />, label: 'Inicio' },
-  { to: '/dashboard/reservas', icon: <Calendar size={18} />, label: 'Citas y Reservas' },
-  { to: '/dashboard/calendario', icon: <Clock size={18} />, label: 'Agenda / Horarios' },
-  { to: '/dashboard/mesas', icon: <Grid size={18} />, label: 'Mapa de Mesas' },
-  { to: '/dashboard/catalogo', icon: <ShoppingBag size={18} />, label: 'Catálogo / Menú' },
-  { to: '/dashboard/equipo', icon: <Users size={18} />, label: 'Personal / Atención' },
-  { to: '/dashboard/configuracion', icon: <Settings size={18} />, label: 'Ajustes del Negocio' },
-];
+const DEFAULT_TABLE = { name: '', capacity: 4, shape: 'square', is_bookable: true };
 
 export const TablesMap = () => {
   const { user, logout } = useAuth();
@@ -36,7 +34,12 @@ export const TablesMap = () => {
   const [floors, setFloors] = useState([]);
   const [selectedFloorId, setSelectedFloorId] = useState(null);
   const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState(null);
+  
+  // Modales
+  const [selectedTable, setSelectedTable] = useState(null); // Para ver detalles
+  const [editTable, setEditTable] = useState(null); // Para crear/editar
+  const [saving, setSaving] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [canvasScale, setCanvasScale] = useState(1);
@@ -46,57 +49,36 @@ export const TablesMap = () => {
     [floors, selectedFloorId]
   );
 
-  // Cargar negocio + zonas
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const biz = await businessAdminService.getMyBusiness();
-        if (!alive) return;
-        setBusiness(biz);
-
-        if (biz) {
-          const zones = await zonesService.listByBusiness(biz.id);
-          if (!alive) return;
-          setFloors(zones);
-          if (zones.length > 0) setSelectedFloorId(zones[0].id);
-        }
-      } catch (err) {
-        if (alive) setError(err.message);
-      } finally {
-        if (alive) setLoading(false);
+  const loadData = async () => {
+    try {
+      const biz = await businessAdminService.getMyBusiness();
+      setBusiness(biz);
+      if (biz) {
+        const zones = await zonesService.listByBusiness(biz.id);
+        setFloors(zones);
+        if (zones.length > 0 && !selectedFloorId) setSelectedFloorId(zones[0].id);
       }
-    };
-    load();
-    return () => { alive = false; };
-  }, []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Cargar mesas al cambiar de zona
+  useEffect(() => { loadData(); }, []);
+
   useEffect(() => {
     if (!selectedFloorId) return;
-    let alive = true;
-    const load = async () => {
-      try {
-        const data = await tablesService.listByFloor(selectedFloorId);
-        if (alive) setTables(data);
-      } catch (err) {
-        if (alive) setError(err.message);
-      }
-    };
-    load();
-    return () => { alive = false; };
+    tablesService.listByFloor(selectedFloorId).then(setTables).catch(err => setError(err.message));
   }, [selectedFloorId]);
 
-  // Auto-zoom en pantallas pequeñas
+  // Auto-zoom
   useEffect(() => {
     const compute = () => {
       const w = window.innerWidth;
       const canvasW = selectedFloor?.canvas_width || 1200;
       const available = w <= 900 ? w - 40 : Math.min(w - 340, 1200);
-      const scale = Math.min(1, available / canvasW);
-      setCanvasScale(Math.max(0.4, scale));
+      setCanvasScale(Math.max(0.4, Math.min(1, available / canvasW)));
     };
     compute();
     window.addEventListener('resize', compute);
@@ -108,64 +90,61 @@ export const TablesMap = () => {
     navigate('/');
   };
 
-  // Stats de la zona actual
-  const zoneStats = useMemo(() => {
-    const active = tables.filter((t) => t.is_active);
-    const bookable = active.filter((t) => t.is_bookable);
-    const totalCapacity = bookable.reduce((s, t) => s + (t.capacity || 0), 0);
-    return {
-      total: tables.length,
-      active: active.length,
-      bookable: bookable.length,
-      totalCapacity,
-    };
-  }, [tables]);
+  // --- CRUD de Mesas ---
+  const handleSaveTable = async (e) => {
+    e.preventDefault();
+    if (!editTable.name.trim()) return toast.error('El nombre es obligatorio');
+    setSaving(true);
+    try {
+      if (editTable.id) {
+        await tablesService.update(editTable.id, editTable);
+        toast.success('Mesa actualizada');
+      } else {
+        await tablesService.create({ ...editTable, floor_id: selectedFloorId });
+        toast.success('Mesa creada');
+      }
+      // Recargar mesas
+      const data = await tablesService.listByFloor(selectedFloorId);
+      setTables(data);
+      setEditTable(null);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  // ===== Render =====
-  if (loading) {
-    return (
-      <DashboardLayout
-        sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
-        navLinks={NAV_LINKS}
-        user={user}
-        onLogout={handleLogout}
-        headerTitle="Mapa de Mesas"
-        headerSubtitle="Cargando..."
-      >
-        <LoadingState>Cargando mapa...</LoadingState>
-      </DashboardLayout>
-    );
-  }
+  const handleDeleteTable = async (table) => {
+    const confirmed = await confirmDialog({
+      title: '¿Eliminar mesa?',
+      text: `Se eliminará "${table.name}" y sus reservas activas.`,
+      confirmText: 'Sí, eliminar',
+      danger: true,
+    });
+    if (!confirmed) return;
+    try {
+      await tablesService.remove(table.id);
+      setTables(prev => prev.filter(t => t.id !== table.id));
+      setSelectedTable(null);
+      toast.success('Mesa eliminada');
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
-  if (!business) {
-    return (
-      <DashboardLayout
-        sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
-        navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/mesas' }))}
-        user={user}
-        onLogout={handleLogout}
-        headerTitle="Mapa de Mesas"
-        headerSubtitle="Sin negocio asignado"
-      >
-        <EmptyState>
-          <Store size={48} />
-          <p>No tienes un negocio asignado. Contacta al administrador.</p>
-        </EmptyState>
-      </DashboardLayout>
-    );
-  }
+  if (loading) return <LoadingState>Cargando mapa...</LoadingState>;
 
   const canvasW = selectedFloor?.canvas_width || 1200;
   const canvasH = selectedFloor?.canvas_height || 800;
 
   return (
     <DashboardLayout
-      sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">{business.name}</span></div></>}
-      navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/mesas' }))}
+      sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">{business?.name || 'Mi Negocio'}</span></div></>}
+      navLinks={getBusinessNavLinks(business, '/dashboard/mesas')}
       user={user}
       onLogout={handleLogout}
       headerTitle="Mapa de Mesas"
-      headerSubtitle="Vista previa de tu distribución (solo lectura)"
+      headerSubtitle="Gestiona la distribución de tu local"
     >
       {error && <ErrorBox>⚠️ {error}</ErrorBox>}
 
@@ -173,58 +152,34 @@ export const TablesMap = () => {
         <EmptyState>
           <Grid size={48} />
           <p>Tu negocio aún no tiene zonas configuradas.</p>
-          <p style={{ fontSize: '0.85rem' }}>
-            Contacta al administrador de AlPunto para configurar tus zonas y mesas.
-          </p>
+          <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Contacta al administrador para crear tu primera zona.</p>
         </EmptyState>
       ) : (
         <>
-          <Toolbar>
-            <Eye size={16} style={{ color: '#94A3B8' }} />
-            <ZoneSelect
-              value={selectedFloorId || ''}
-              onChange={(e) => setSelectedFloorId(e.target.value)}
-            >
-              {floors.map((f) => (
-                <option key={f.id} value={f.id}>{f.name}</option>
-              ))}
+          <Toolbar style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <ZoneSelect value={selectedFloorId || ''} onChange={(e) => setSelectedFloorId(e.target.value)}>
+              {floors.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </ZoneSelect>
+            
+            <div style={{ flex: 1 }} />
 
-            <div className="spacer" />
-
-            <Legend>
-              <span><i className="dot bookable" /> Reservable</span>
-              <span><i className="dot not-bookable" /> No reservable</span>
-              <span><i className="dot locked" /> Zona fija</span>
-            </Legend>
+            <PrimaryButton onClick={() => setEditTable(DEFAULT_TABLE)}>
+              <Plus size={16} /> Nueva Mesa
+            </PrimaryButton>
+            
+            {/* Botón para ir al editor visual completo */}
+            <Link to={`/super-admin/negocios/${business.id}/editor`} target="_blank" style={{ textDecoration: 'none' }}>
+              <GhostButton type="button" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <LayoutDashboard size={16} /> Modo Edición (Arrastrar)
+              </GhostButton>
+            </Link>
           </Toolbar>
 
-          {selectedFloor && (
-            <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#94A3B8' }}>
-              <strong style={{ color: '#F5F5F5' }}>{selectedFloor.name}</strong>
-              {selectedFloor.description ? ` · ${selectedFloor.description}` : ''}
-              {!selectedFloor.is_bookable && ' · No reservable'}
-            </div>
-          )}
-
           <CanvasOuter>
-            <div
-              style={{
-                width: `${canvasW * canvasScale}px`,
-                height: `${canvasH * canvasScale}px`,
-                position: 'relative',
-              }}
-            >
-              <Canvas
-                ref={canvasRef}
-                $w={canvasW}
-                $h={canvasH}
-                $scale={canvasScale}
-              >
+            <div style={{ width: `${canvasW * canvasScale}px`, height: `${canvasH * canvasScale}px`, position: 'relative' }}>
+              <Canvas ref={canvasRef} $w={canvasW} $h={canvasH} $scale={canvasScale}>
                 {tables.length === 0 ? (
-                  <EmptyCanvasMessage>
-                    Esta zona no tiene mesas todavía.
-                  </EmptyCanvasMessage>
+                  <EmptyCanvasMessage>Esta zona no tiene mesas. Crea una nueva.</EmptyCanvasMessage>
                 ) : (
                   tables.map((t) => (
                     <TableShape
@@ -238,111 +193,73 @@ export const TablesMap = () => {
                         height: `${t.height || 80}px`,
                         transform: 'translate(-50%, -50%)',
                         opacity: t.is_active ? 1 : 0.4,
+                        cursor: 'pointer'
                       }}
                       onClick={() => setSelectedTable(t)}
-                      title={`${t.name} · ${t.capacity} personas`}
                     >
                       <span className="table-name">{t.name}</span>
                       <span className="table-cap">{t.capacity} p.</span>
-                      {!t.is_movable && (
-                        <span className="lock-icon">
-                          <Lock size={10} />
-                        </span>
-                      )}
                     </TableShape>
                   ))
                 )}
               </Canvas>
             </div>
           </CanvasOuter>
-
-          <StatsRow>
-            <div className="stat-box">
-              <div className="label">Total mesas</div>
-              <div className="value">{zoneStats.total}</div>
-            </div>
-            <div className="stat-box">
-              <div className="label">Activas</div>
-              <div className="value">{zoneStats.active}</div>
-            </div>
-            <div className="stat-box">
-              <div className="label">Reservables</div>
-              <div className="value">{zoneStats.bookable}</div>
-            </div>
-            <div className="stat-box">
-              <div className="label">Cap. total</div>
-              <div className="value">{zoneStats.totalCapacity}</div>
-            </div>
-          </StatsRow>
         </>
       )}
 
-      {/* ===== Modal de detalle de mesa ===== */}
+      {/* MODAL: Ver Detalle / Editar / Eliminar */}
       {selectedTable && (
         <ModalOverlay onClick={() => setSelectedTable(null)}>
           <ModalCard onClick={(e) => e.stopPropagation()}>
-            <h2>
-              {selectedTable.name}{' '}
-              {!selectedTable.is_movable && (
-                <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 600 }}>
-                  (fija)
-                </span>
-              )}
-            </h2>
+            <h2>Mesa: {selectedTable.name}</h2>
+            <DetailRow><span className="label">Capacidad:</span> <span className="value">{selectedTable.capacity} personas</span></DetailRow>
+            <DetailRow><span className="label">Forma:</span> <span className="value">{selectedTable.shape}</span></DetailRow>
+            <DetailRow><span className="label">Posición:</span> <span className="value">X: {selectedTable.pos_x} · Y: {selectedTable.pos_y}</span></DetailRow>
+            
+            <ModalActions style={{ marginTop: '1.5rem' }}>
+              <GhostButton $danger onClick={() => handleDeleteTable(selectedTable)}>
+                <Trash2 size={14} /> Eliminar
+              </GhostButton>
+              <PrimaryButton onClick={() => { setEditTable(selectedTable); setSelectedTable(null); }}>
+                <Edit2 size={14} /> Editar Mesa
+              </PrimaryButton>
+            </ModalActions>
+          </ModalCard>
+        </ModalOverlay>
+      )}
 
-            <DetailRow>
-              <span className="label">👥 Capacidad</span>
-              <span className="value">
-                {selectedTable.capacity} personas
-                {selectedTable.min_capacity > 1 && ` (mín ${selectedTable.min_capacity})`}
-              </span>
-            </DetailRow>
+      {/* MODAL: Crear / Editar Mesa */}
+      {editTable && (
+        <ModalOverlay onClick={() => !saving && setEditTable(null)}>
+          <ModalCard onClick={(e) => e.stopPropagation()} onSubmit={handleSaveTable}>
+            <h2>{editTable.id ? 'Editar Mesa' : 'Nueva Mesa'}</h2>
+            
+            <FieldGroup>
+              <label>Nombre (Ej. M1, J2)</label>
+              <input type="text" value={editTable.name} onChange={e => setEditTable({...editTable, name: e.target.value})} required />
+            </FieldGroup>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <FieldGroup>
+                <label>Capacidad (Personas)</label>
+                <input type="number" min="1" value={editTable.capacity} onChange={e => setEditTable({...editTable, capacity: parseInt(e.target.value)})} required />
+              </FieldGroup>
+              <FieldGroup>
+                <label>Forma</label>
+                <select value={editTable.shape} onChange={e => setEditTable({...editTable, shape: e.target.value})}>
+                  <option value="square">Cuadrada</option>
+                  <option value="rectangle">Rectangular</option>
+                  <option value="circle">Circular</option>
+                  <option value="oval">Ovalada</option>
+                </select>
+              </FieldGroup>
+            </div>
 
-            <DetailRow>
-              <span className="label">📐 Forma</span>
-              <span className="value">{selectedTable.shape}</span>
-            </DetailRow>
-
-            <DetailRow>
-              <span className="label">📏 Tamaño</span>
-              <span className="value">
-                {selectedTable.width || 80} × {selectedTable.height || 80} px
-              </span>
-            </DetailRow>
-
-            <DetailRow>
-              <span className="label">📍 Posición</span>
-              <span className="value">
-                X: {selectedTable.pos_x ?? 0} · Y: {selectedTable.pos_y ?? 0}
-              </span>
-            </DetailRow>
-
-            <DetailRow>
-              <span className="label">📊 Estado</span>
-              <span className="value">
-                {selectedTable.is_active ? 'Activa' : 'Inactiva'}
-                {selectedTable.is_bookable ? ' · Reservable' : ' · No reservable'}
-              </span>
-            </DetailRow>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTable(null)}
-              style={{
-                width: '100%',
-                marginTop: '1.25rem',
-                padding: '0.75rem',
-                borderRadius: '10px',
-                border: 'none',
-                background: '#FF6B00',
-                color: '#fff',
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Cerrar
-            </button>
+            <ModalActions>
+              <GhostButton type="button" onClick={() => setEditTable(null)} disabled={saving}>Cancelar</GhostButton>
+              <PrimaryButton type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar Mesa'}</PrimaryButton>
+            </ModalActions>
           </ModalCard>
         </ModalOverlay>
       )}

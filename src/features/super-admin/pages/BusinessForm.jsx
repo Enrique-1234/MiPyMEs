@@ -292,7 +292,7 @@ export const BusinessForm = () => {
                 onChange={(e) => updateField('slug', e.target.value.toLowerCase())}
                 placeholder="el-jardin-de-frida"
                 required
-                pattern="[a-z0-9-]+"
+                pattern="[a-z0-9\-]+"
                 maxLength={80}
               />
               <span className="hint">Se usa en la URL: alpunto.com/negocio/{form.slug || 'slug'}</span>

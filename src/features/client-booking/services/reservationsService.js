@@ -3,9 +3,8 @@ import { supabase } from '../../../services/supabaseClient';
 
 export const reservationsService = {
   /**
-   * Crea una reserva + asigna la mesa. Rollback manual si falla el segundo paso.
-   * @param {Object} params
-   * @returns {Promise<Object>} La reserva creada (con confirmation_code)
+   * Crea una reserva. Si se pasan tableIds, las asigna (restaurantes).
+   * Si no, solo crea la reserva (barberías, veterinarias, citas).
    */
   async create({
     businessId,
@@ -20,13 +19,10 @@ export const reservationsService = {
     guestEmail = null,
     specialRequests = null,
   }) {
-    if (!tableIds.length) {
-      throw new Error('No hay mesas disponibles para este horario');
-    }
-
+    // 1. Ya no bloqueamos si no hay mesas (citas no necesitan mesa)
     const during = `[${slotStart},${slotEnd})`;
 
-    // 1. Insertar la reserva
+    // 2. Insertar la reserva
     const { data: reservation, error: resError } = await supabase
       .from('reservations')
       .insert({
@@ -48,22 +44,24 @@ export const reservationsService = {
       throw new Error(this._translateError(resError));
     }
 
-    // 2. Asignar la mesa (o mesas) a la reserva
-    const reservationsTablesRows = tableIds.map((tableId) => ({
-      reservation_id: reservation.id,
-      table_id: tableId,
-      during,
-      active: true,
-    }));
+    // 3. Si hay mesas involucradas (restaurantes), las asignamos
+    if (tableIds && tableIds.length > 0) {
+      const reservationsTablesRows = tableIds.map((tableId) => ({
+        reservation_id: reservation.id,
+        table_id: tableId,
+        during,
+        active: true,
+      }));
 
-    const { error: rtError } = await supabase
-      .from('reservation_tables')
-      .insert(reservationsTablesRows);
+      const { error: rtError } = await supabase
+        .from('reservation_tables')
+        .insert(reservationsTablesRows);
 
-    if (rtError) {
-      // Rollback manual: borrar la reserva huérfana
-      await supabase.from('reservations').delete().eq('id', reservation.id);
-      throw new Error(this._translateError(rtError));
+      if (rtError) {
+        // Rollback: borrar la reserva si falla la asignación de mesas
+        await supabase.from('reservations').delete().eq('id', reservation.id);
+        throw new Error(this._translateError(rtError));
+      }
     }
 
     return reservation;
@@ -107,7 +105,8 @@ export const reservationsService = {
     }
     return msg || 'Error al crear la reserva. Intenta de nuevo.';
   },
-    /**
+
+  /**
    * Lista las reservas del usuario logueado.
    */
   async listMyReservations() {

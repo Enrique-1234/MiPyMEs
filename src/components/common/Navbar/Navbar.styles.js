@@ -15,7 +15,7 @@ export const NavHeader = styled.header`
   justify-content: space-between;
   padding: 0 clamp(1rem, 3vw, 2rem);
   z-index: 9999; /* Asegura estar siempre por encima del Hero y fondos */
-  background: ${({ $scrolled }) => ($scrolled ? 'rgba(28, 28, 28, 0.88)' : 'rgba(10, 10, 10, 0.75)')};
+  background: ${({ $scrolled }) => ($scrolled ? 'rgba(28, 28, 28, 0.88)' : 'rgba(252, 105, 0, 0.95)')};
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};

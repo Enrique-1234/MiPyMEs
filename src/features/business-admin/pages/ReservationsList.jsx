@@ -13,16 +13,8 @@ import {
   EmptyState, LoadingState, ErrorBox,
 } from './ReservationsList.styles';
 import { toast } from '../../../utils/alerts';
+import { getBusinessNavLinks } from '../utils/navLinks';
 
-const NAV_LINKS = [
-  { to: '/dashboard', icon: <Clock size={18} />, label: 'Inicio' },
-  { to: '/dashboard/reservas', icon: <Calendar size={18} />, label: 'Citas y Reservas' },
-  { to: '/dashboard/calendario', icon: <Clock size={18} />, label: 'Agenda / Horarios' },
-  { to: '/dashboard/mesas', icon: <Grid size={18} />, label: 'Mapa de Mesas' },
-  { to: '/dashboard/catalogo', icon: <ShoppingBag size={18} />, label: 'Catálogo / Menú' },
-  { to: '/dashboard/equipo', icon: <Users size={18} />, label: 'Personal / Atención' },
-  { to: '/dashboard/configuracion', icon: <Settings size={18} />, label: 'Ajustes del Negocio' },
-];
 
 const STATUS_OPTIONS = [
   { value: 'pending',   label: 'Pendiente' },
@@ -184,8 +176,7 @@ const handleStatusChange = async (reservation, newStatus) => {
           </div>
         </>
       }
-      navLinks={NAV_LINKS.map((l) => ({ ...l, active: l.to === '/dashboard/reservas' }))}
-      user={user}
+      navLinks={getBusinessNavLinks(business, '/dashboard/reservas')}      user={user}
       onLogout={handleLogout}
       headerTitle="Citas y Reservas"
       headerSubtitle={

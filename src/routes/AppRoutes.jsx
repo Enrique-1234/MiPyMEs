@@ -28,6 +28,16 @@ import { ExploreBusinesses } from '../features/client-booking/pages/ExploreBusin
 import { TablesMap } from '../features/business-admin/pages/TablesMap';
 import { StaffList } from '../features/business-admin/pages/StaffList';
 import { MenuList } from '../features/business-admin/pages/MenuList';
+import { RegisterBusiness } from '../features/auth/pages/RegisterBusiness';
+import { RegisterBusinessInfo } from '../features/auth/pages/RegisterBusinessInfo';
+import { Register } from '../features/auth/pages/Register';
+import { ServicesList } from '../features/business-admin/pages/ServicesList';
+import { UsersList } from '../features/super-admin/pages/UsersList';
+import { GlobalSettings } from '../features/super-admin/pages/GlobalSettings';
+import { Subscriptions } from '../features/super-admin/pages/Subscriptions';
+import { Security } from '../features/super-admin/pages/Security';
+import { FavoritesList } from '../features/client-booking/pages/FavoritesList';
+
 // 🔀 Catch-all
 const RootRedirect = () => {
   const { isAuthenticated, getHomeRoute } = useAuth();
@@ -43,6 +53,44 @@ export const AppRoutes = () => {
       <Route path="/negocio/:slug" element={<BusinessDetail />} />
       <Route path="/reserva/:code" element={<ReservationConfirmation />} />
       <Route path="/mi-reserva" element={<LookupReservation />} />
+<Route
+  path="/dashboard/servicios"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin']}>
+      <ServicesList />
+    </ProtectedRoute>
+  }
+/>
+
+{/* Registro de cliente (usuario normal) */}
+<Route
+  path="/registro"
+  element={<Register />}
+/>
+
+{/* Registro de negocio (business-admin) */}
+<Route
+  path="/registro-negocio"
+  element={<RegisterBusiness />}
+/>
+
+{/* Formulario de información del negocio */}
+<Route
+  path="/registro/negocio"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin', 'client']}>
+      <RegisterBusinessInfo />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/registro/negocio"
+  element={
+    <ProtectedRoute allowedRoles={['business-admin', 'client']}>
+      <RegisterBusinessInfo />
+    </ProtectedRoute>
+  }
+/>
 
       {/* 🛡️ Super Admin */}
       <Route
@@ -133,38 +181,42 @@ export const AppRoutes = () => {
     </ProtectedRoute>
   }
 />
-      <Route
-        path="/super-admin/usuarios"
-        element={
-          <ProtectedRoute allowedRoles={['super-admin']}>
-            <Placeholder title="Usuarios" subtitle="Administra las cuentas de la plataforma" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/super-admin/suscripciones"
-        element={
-          <ProtectedRoute allowedRoles={['super-admin']}>
-            <Placeholder title="Suscripciones" subtitle="Controla los planes y pagos" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/super-admin/seguridad"
-        element={
-          <ProtectedRoute allowedRoles={['super-admin']}>
-            <Placeholder title="Seguridad" subtitle="Logs, auditoría y accesos" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/super-admin/configuracion"
-        element={
-          <ProtectedRoute allowedRoles={['super-admin']}>
-            <Placeholder title="Configuración Global" subtitle="Ajustes generales de AlPunto" />
-          </ProtectedRoute>
-        }
-      />
+<Route
+  path="/super-admin/usuarios"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <UsersList />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/super-admin/suscripciones"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <Subscriptions />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/super-admin/seguridad"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <Security />
+    </ProtectedRoute>
+  }
+/>
+
+{/* Configuración Global */}
+<Route
+  path="/super-admin/configuracion"
+  element={
+    <ProtectedRoute allowedRoles={['super-admin']}>
+      <GlobalSettings />
+    </ProtectedRoute>
+  }
+/>
 
       {/* 🏪 Business Admin */}
  <Route
@@ -249,14 +301,16 @@ export const AppRoutes = () => {
     </ProtectedRoute>
   }
 />
-      <Route
-        path="/user/favoritos"
-        element={
-          <ProtectedRoute allowedRoles={['client']}>
-            <Placeholder title="Favoritos" subtitle="Tus negocios guardados" />
-          </ProtectedRoute>
-        }
-      />
+
+<Route
+  path="/user/favoritos"
+  element={
+    <ProtectedRoute allowedRoles={['client']}>
+      <FavoritesList />
+    </ProtectedRoute>
+  }
+/>
+
    <Route
   path="/user/perfil"
   element={
