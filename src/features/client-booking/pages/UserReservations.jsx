@@ -136,7 +136,7 @@ export const UserReservations = () => {
         <>
           <span className="badge-icon">U</span>
           <div>
-            <span>AlPunto</span>
+            <span>ReservaPro</span>
             <span className="business-tag">Mi Cuenta</span>
           </div>
         </>

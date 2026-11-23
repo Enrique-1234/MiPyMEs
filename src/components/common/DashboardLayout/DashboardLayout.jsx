@@ -81,7 +81,7 @@ export const DashboardLayout = ({
             <>
               <span className="badge-icon">A</span>
               <div>
-                <span>AlPunto</span>
+                <span>ReservaPro</span>
                 <span className="business-tag">Panel</span>
               </div>
             </>

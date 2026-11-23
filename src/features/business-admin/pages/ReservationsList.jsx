@@ -1,12 +1,10 @@
-// src/features/business-admin/pages/ReservationsList.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Clock, Calendar, Users, ShoppingBag, Grid, Settings, Search as SearchIcon,
-} from 'lucide-react';
+import { Search as SearchIcon, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { DashboardLayout } from '../../../components/common/DashboardLayout/DashboardLayout';
 import { businessAdminService } from '../services/businessAdminService';
+import { buildAdminToClientWhatsAppUrl } from '../../../utils/whatsapp';
 import {
   Toolbar, SearchInput, FilterSelect, ChipsRow, Chip, List,
   ReservationCard, DateBlock, InfoBlock, StatusBadge, StatusSelect,
@@ -14,7 +12,6 @@ import {
 } from './ReservationsList.styles';
 import { toast } from '../../../utils/alerts';
 import { getBusinessNavLinks } from '../utils/navLinks';
-
 
 const STATUS_OPTIONS = [
   { value: 'pending',   label: 'Pendiente' },
@@ -38,11 +35,11 @@ export const ReservationsList = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updating, setUpdating] = useState({}); // { [id]: true }
+  const [updating, setUpdating] = useState({});
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('upcoming'); // upcoming | today | week | past | all
+  const [dateFilter, setDateFilter] = useState('upcoming');
 
   useEffect(() => {
     let alive = true;
@@ -73,7 +70,6 @@ export const ReservationsList = () => {
     navigate('/');
   };
 
-  // Filtrar
   const filtered = useMemo(() => {
     const now = new Date();
     const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
@@ -81,7 +77,6 @@ export const ReservationsList = () => {
     const weekEnd = new Date(todayStart); weekEnd.setDate(weekEnd.getDate() + 7);
 
     return reservations.filter((r) => {
-      // Búsqueda
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         const matches =
@@ -92,10 +87,8 @@ export const ReservationsList = () => {
         if (!matches) return false;
       }
 
-      // Estado
       if (statusFilter && r.status !== statusFilter) return false;
 
-      // Fecha
       const { start } = businessAdminService.parseRange(r.during);
       if (!start) return false;
 
@@ -114,7 +107,6 @@ export const ReservationsList = () => {
     });
   }, [reservations, search, statusFilter, dateFilter]);
 
-  // Ordenar: próximas primero (ascendente), pasadas al final (descendente)
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
       const sa = businessAdminService.parseRange(a.during).start;
@@ -128,34 +120,34 @@ export const ReservationsList = () => {
     });
   }, [filtered]);
 
-const handleStatusChange = async (reservation, newStatus) => {
-  if (reservation.status === newStatus) return;
-  setUpdating((prev) => ({ ...prev, [reservation.id]: true }));
-  try {
-    await businessAdminService.updateReservationStatus(reservation.id, newStatus);
-    setReservations((prev) =>
-      prev.map((r) => (r.id === reservation.id ? { ...r, status: newStatus } : r))
-    );
+  const handleStatusChange = async (reservation, newStatus) => {
+    if (reservation.status === newStatus) return;
+    setUpdating((prev) => ({ ...prev, [reservation.id]: true }));
+    try {
+      await businessAdminService.updateReservationStatus(reservation.id, newStatus);
+      setReservations((prev) =>
+        prev.map((r) => (r.id === reservation.id ? { ...r, status: newStatus } : r))
+      );
 
-    const labels = {
-      confirmed: 'Reserva confirmada',
-      cancelled: 'Reserva cancelada',
-      seated: 'Cliente sentado',
-      completed: 'Reserva completada',
-      no_show: 'Marcada como no-show',
-      pending: 'Reserva marcada como pendiente',
-    };
-    toast.success(labels[newStatus] || 'Estado actualizado');
-  } catch (err) {
-    toast.error(err.message);
-  } finally {
-    setUpdating((prev) => {
-      const next = { ...prev };
-      delete next[reservation.id];
-      return next;
-    });
-  }
-};
+      const labels = {
+        confirmed: 'Reserva confirmada',
+        cancelled: 'Reserva cancelada',
+        seated: 'Cliente sentado',
+        completed: 'Reserva completada',
+        no_show: 'Marcada como no-show',
+        pending: 'Reserva marcada como pendiente',
+      };
+      toast.success(labels[newStatus] || 'Estado actualizado');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setUpdating((prev) => {
+        const next = { ...prev };
+        delete next[reservation.id];
+        return next;
+      });
+    }
+  };
 
   const counts = useMemo(() => {
     return {
@@ -171,12 +163,13 @@ const handleStatusChange = async (reservation, newStatus) => {
         <>
           <span className="badge-icon">A</span>
           <div>
-            <span>AlPunto</span>
+            <span>ReservaPro</span>
             <span className="business-tag">{business?.name || 'Mi Negocio'}</span>
           </div>
         </>
       }
-      navLinks={getBusinessNavLinks(business, '/dashboard/reservas')}      user={user}
+      navLinks={getBusinessNavLinks(business, '/dashboard/reservas')}
+      user={user}
       onLogout={handleLogout}
       headerTitle="Citas y Reservas"
       headerSubtitle={
@@ -255,6 +248,12 @@ const handleStatusChange = async (reservation, newStatus) => {
                   ? {
                       day: start.toLocaleDateString('es-MX', { day: 'numeric', timeZone: tz }),
                       month: start.toLocaleDateString('es-MX', { month: 'short', timeZone: tz }),
+                      fullDate: start.toLocaleDateString('es-MX', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        timeZone: tz,
+                      }),
                       time: start.toLocaleTimeString('es-MX', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -262,13 +261,23 @@ const handleStatusChange = async (reservation, newStatus) => {
                         timeZone: tz,
                       }),
                     }
-                  : { day: '?', month: '?', time: '?' };
+                  : { day: '?', month: '?', fullDate: '', time: '?' };
 
                 const tableNames = (r.reservation_tables || [])
                   .filter((rt) => rt.active)
                   .map((rt) => rt.table?.name)
                   .filter(Boolean)
                   .join(', ');
+
+                const clientWaUrl = buildAdminToClientWhatsAppUrl({
+                  guestPhone: r.guest_phone,
+                  guestName: r.guest_name,
+                  businessName: business?.name || 'Reserva Pro',
+                  confirmationCode: r.confirmation_code,
+                  dateLabel: dateParts.fullDate,
+                  timeLabel: dateParts.time,
+                  status: r.status,
+                });
 
                 return (
                   <ReservationCard key={r.id}>
@@ -293,15 +302,38 @@ const handleStatusChange = async (reservation, newStatus) => {
                       {STATUS_LABELS[r.status] || r.status}
                     </StatusBadge>
 
-                    <StatusSelect
-                      value={r.status}
-                      onChange={(e) => handleStatusChange(r, e.target.value)}
-                      disabled={!!updating[r.id]}
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s.value} value={s.value}>{s.label}</option>
-                      ))}
-                    </StatusSelect>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StatusSelect
+                        value={r.status}
+                        onChange={(e) => handleStatusChange(r, e.target.value)}
+                        disabled={!!updating[r.id]}
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </StatusSelect>
+
+                      {clientWaUrl && (
+                        <a
+                          href={clientWaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Enviar mensaje por WhatsApp al cliente"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#25D366',
+                            color: '#fff',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <MessageCircle size={16} />
+                        </a>
+                      )}
+                    </div>
                   </ReservationCard>
                 );
               })}

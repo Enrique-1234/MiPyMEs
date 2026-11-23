@@ -138,7 +138,7 @@ export const MorphOverlay = ({ isOpen, onClose, links = [] }) => {
       </MenuContent>
 
       <MenuFooter className="menu-extra">
-        <strong>AlPunto</strong>
+        <strong>ReservaPro</strong>
         <span>Directorio de comercios de Nicolás Romero</span>
       </MenuFooter>
     </OverlayRoot>

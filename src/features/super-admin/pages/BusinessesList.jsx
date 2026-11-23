@@ -123,7 +123,7 @@ const handleDelete = async (id, name) => {
         <>
           <span className="badge-icon">SA</span>
           <div>
-            <span>AlPunto</span>
+            <span>ReservaPro</span>
             <span className="business-tag">Super Admin</span>
           </div>
         </>

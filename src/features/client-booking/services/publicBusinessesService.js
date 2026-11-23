@@ -33,7 +33,7 @@ export const publicBusinessesService = {
       id: b.id,
       slug: b.slug,
       name: b.name,
-      description: b.description || 'Descubre este negocio en AlPunto.',
+      description: b.description || 'Descubre este negocio en ReservaPro.',
       category: b.business_types?.label || 'General',
       categoryId: b.type_id,
       city: b.city || '',

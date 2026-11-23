@@ -2,7 +2,7 @@
 import Swal from 'sweetalert2';
 
 // ============================================================
-// Configuración base (tema oscuro AlPunto)
+// Configuración base (tema oscuro ReservaPro)
 // ============================================================
 const baseConfig = {
   background: '#1C1C1C',

@@ -179,7 +179,7 @@ export const Login = () => {
         <FormSide>
           <FormCard onSubmit={handleSubmit} noValidate>
             <h1 className="login-anim">Iniciar sesión</h1>
-            <p className="sub login-anim">Ingresa a tu cuenta de AlPunto</p>
+            <p className="sub login-anim">Ingresa a tu cuenta de ReservaPro</p>
 
             <FormGroup className="login-anim" $hasError={!!fieldErrors.email}>
               <input

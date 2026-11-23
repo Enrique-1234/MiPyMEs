@@ -164,7 +164,7 @@ export const StaffList = () => {
 
   return (
     <DashboardLayout
-      sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">{business?.name || 'Mi Negocio'}</span></div></>}
+      sidebarLogo={<><span className="badge-icon">A</span><div><span>ReservaPro</span><span className="business-tag">{business?.name || 'Mi Negocio'}</span></div></>}
       navLinks={getBusinessNavLinks(business, '/dashboard/equipo')}
       user={user}
       onLogout={handleLogout}

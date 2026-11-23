@@ -226,7 +226,7 @@ export const BusinessDashboard = () => {
           <h2>Aún no tienes un negocio asignado</h2>
 
           <p>
-            Contacta al administrador de AlPunto para que te
+            Contacta al administrador de ReservaPro para que te
             asigne un negocio. Una vez asignado, aquí verás
             tus reservas y estadísticas.
           </p>
@@ -394,7 +394,7 @@ export const BusinessDashboard = () => {
             <span className="badge-icon">A</span>
 
             <div>
-              <span>AlPunto</span>
+              <span>ReservaPro</span>
               <span className="business-tag">
                 {business.name}
               </span>
@@ -478,7 +478,7 @@ export const BusinessDashboard = () => {
               }}
             >
               Hemos recibido la información de tu negocio.
-              El equipo de AlPunto revisará los datos para
+              El equipo de ReservaPro revisará los datos para
               comprobar que todo esté correcto.
             </p>
 
@@ -524,7 +524,7 @@ export const BusinessDashboard = () => {
                 fontSize: '0.8rem',
               }}
             >
-              AlPunto · Verificación de negocios
+              ReservaPro · Verificación de negocios
             </p>
           </div>
         </div>
@@ -540,7 +540,7 @@ export const BusinessDashboard = () => {
           <span className="badge-icon">A</span>
 
           <div>
-            <span>AlPunto</span>
+            <span>ReservaPro</span>
             <span className="business-tag">
               {business?.name || 'Mi Negocio'}
             </span>

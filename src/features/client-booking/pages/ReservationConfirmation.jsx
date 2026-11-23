@@ -1,9 +1,11 @@
-// src/features/client-booking/pages/ReservationConfirmation.jsx
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { CheckCircle2, Home, MapPin } from 'lucide-react';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { CheckCircle2, Home, MapPin, MessageCircle, CreditCard } from 'lucide-react';
 import { Navbar } from '../../../components/common/Navbar/Navbar';
 import { reservationsService } from '../services/reservationsService';
+import { createMercadoPagoPreference } from '../../../services/mercadoPagoService';
+import { supabase } from '../../../services/supabaseClient';
+import { buildClientToBusinessWhatsAppUrl } from '../../../utils/whatsapp';
 import {
   PageWrapper, Card, SuccessIcon, Title, Subtitle, CodeBox,
   DetailsGrid, Notice, Actions, PrimaryBtn, GhostBtn,
@@ -14,9 +16,11 @@ import { toast } from '../../../utils/alerts';
 export const ReservationConfirmation = () => {
   const { code } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [reservation, setReservation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -24,7 +28,24 @@ export const ReservationConfirmation = () => {
     const load = async () => {
       try {
         const data = await reservationsService.getByConfirmationCode(code);
-        if (alive) setReservation(data);
+        if (!alive) return;
+
+        // Si Mercado Pago regresó con ?payment=approved, confirmamos la reserva en Supabase
+        const paymentStatus = searchParams.get('payment');
+        if (paymentStatus === 'approved' && data && data.status === 'pending') {
+          await supabase
+            .from('reservations')
+            .update({
+              status: 'confirmed',
+              notes: 'Anticipo aprobado vía Mercado Pago Sandbox',
+            })
+            .eq('id', data.id);
+
+          data.status = 'confirmed';
+          toast.success('¡Anticipo recibido! Tu reservación quedó confirmada.');
+        }
+
+        setReservation(data);
       } catch (err) {
         if (alive) setError(err.message);
       } finally {
@@ -33,7 +54,7 @@ export const ReservationConfirmation = () => {
     };
     load();
     return () => { alive = false; };
-  }, [code]);
+  }, [code, searchParams]);
 
   if (loading) {
     return (
@@ -60,14 +81,16 @@ export const ReservationConfirmation = () => {
     );
   }
 
-  const formatDateTime = (range) => {
-    try {
-      // range es tipo '[2026-10-10 17:30:00+00,2026-10-10 19:30:00+00)'
-      // Extraemos el lower
-      const match = String(range).match(/[[(]([^,]+),/);
-      if (!match) return '—';
-      const start = new Date(match[1]);
-      return start.toLocaleString('es-MX', {
+  const getStartDate = (range) => {
+    const match = String(range || '').match(/[[(]([^,]+),/);
+    return match ? new Date(match[1]) : null;
+  };
+
+  const tz = reservation.business?.timezone || 'America/Mexico_City';
+  const startDate = getStartDate(reservation.during);
+
+  const formattedDateTime = startDate
+    ? startDate.toLocaleString('es-MX', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -75,12 +98,65 @@ export const ReservationConfirmation = () => {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
-        timeZone: reservation.business?.timezone || 'America/Mexico_City',
+        timeZone: tz,
+      })
+    : '—';
+
+  const dateLabel = startDate
+    ? startDate.toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: tz,
+      })
+    : '';
+
+  const timeLabel = startDate
+    ? startDate.toLocaleTimeString('es-MX', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: tz,
+      })
+    : '';
+
+  const tableNames = (reservation.reservation_tables || [])
+    .filter((rt) => rt.active !== false)
+    .map((rt) => rt.table?.name)
+    .filter(Boolean)
+    .join(', ');
+
+  const waUrl = buildClientToBusinessWhatsAppUrl({
+    businessWhatsapp: reservation.business?.whatsapp || reservation.business?.phone,
+    businessName: reservation.business?.name,
+    confirmationCode: reservation.confirmation_code,
+    guestName: reservation.guest_name,
+    dateLabel,
+    timeLabel,
+    partySize: reservation.party_size,
+    tableName: tableNames,
+  });
+
+  const handlePayAdvance = async () => {
+    try {
+      setPaying(true);
+      const pref = await createMercadoPagoPreference({
+        reservationId: reservation.id,
+        confirmationCode: reservation.confirmation_code,
+        businessName: reservation.business?.name,
+        amount: 100,
+        payerEmail: reservation.guest_email,
       });
-    } catch {
-      return '—';
+
+      window.location.href = pref.sandbox_init_point || pref.init_point;
+    } catch (err) {
+      toast.error(err.message || 'No se pudo iniciar el pago con Mercado Pago');
+    } finally {
+      setPaying(false);
     }
   };
+
+  const isConfirmed = reservation.status === 'confirmed';
 
   return (
     <>
@@ -91,10 +167,12 @@ export const ReservationConfirmation = () => {
             <CheckCircle2 />
           </SuccessIcon>
 
-          <Title>¡Reserva recibida!</Title>
+          <Title>{isConfirmed ? '¡Reserva confirmada!' : '¡Reserva recibida!'}</Title>
           <Subtitle>
             Tu solicitud fue enviada a <strong>{reservation.business?.name}</strong>.
-            Te contactarán para confirmar los detalles.
+            {isConfirmed
+              ? ' Tu anticipo fue acreditado y tu lugar está asegurado.'
+              : ' Puedes adelantar tu anticipo o enviar tu folio por WhatsApp.'}
           </Subtitle>
 
           <CodeBox>
@@ -105,12 +183,18 @@ export const ReservationConfirmation = () => {
           <DetailsGrid>
             <div className="row">
               <span className="label">📅 Cuándo</span>
-              <span className="value">{formatDateTime(reservation.during)}</span>
+              <span className="value">{formattedDateTime}</span>
             </div>
             <div className="row">
               <span className="label">👥 Personas</span>
               <span className="value">{reservation.party_size}</span>
             </div>
+            {tableNames && (
+              <div className="row">
+                <span className="label">🪑 Mesa / Espacio</span>
+                <span className="value">{tableNames}</span>
+              </div>
+            )}
             <div className="row">
               <span className="label">🙋 A nombre de</span>
               <span className="value">{reservation.guest_name}</span>
@@ -123,7 +207,9 @@ export const ReservationConfirmation = () => {
             )}
             <div className="row">
               <span className="label">📍 Estado</span>
-              <span className="value">⏳ Pendiente de confirmación</span>
+              <span className="value">
+                {isConfirmed ? '✅ Confirmada' : '⏳ Pendiente de confirmación'}
+              </span>
             </div>
           </DetailsGrid>
 
@@ -133,27 +219,85 @@ export const ReservationConfirmation = () => {
             tu reserva. Si necesitas cancelar, comunícate directamente con el negocio.
           </Notice>
 
-<Actions>
-  <PrimaryBtn as={Link} to={`/negocio/${reservation.business?.slug}`}>
-    <MapPin size={16} />
-    Ver el negocio
-  </PrimaryBtn>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              marginBottom: '1rem',
+              width: '100%',
+            }}
+          >
+            {!isConfirmed && (
+              <button
+                type="button"
+                onClick={handlePayAdvance}
+                disabled={paying}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  backgroundColor: '#009EE3',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  cursor: paying ? 'not-allowed' : 'pointer',
+                  opacity: paying ? 0.7 : 1,
+                }}
+              >
+                <CreditCard size={18} />
+                {paying ? 'Conectando con Mercado Pago...' : 'Pagar anticipo ($100 MXN) con Mercado Pago'}
+              </button>
+            )}
 
-  <GhostBtn
-    onClick={() => {
-      const url = `${window.location.origin}/mi-reserva`;
-      navigator.clipboard.writeText(url);
-      toast.success('Enlace copiado. Guárdalo para consultar tu reserva después.');
-    }}
-  >
-    📋 Copiar enlace de consulta
-  </GhostBtn>
+            {waUrl && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  backgroundColor: '#25D366',
+                  color: '#fff',
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                <MessageCircle size={18} />
+                Enviar folio por WhatsApp al negocio
+              </a>
+            )}
+          </div>
 
-  <GhostBtn onClick={() => navigate('/')}>
-    <Home size={14} style={{ verticalAlign: '-2px', marginRight: '0.3rem' }} />
-    Volver al inicio
-  </GhostBtn>
-</Actions>
+          <Actions>
+            <PrimaryBtn as={Link} to={`/negocio/${reservation.business?.slug}`}>
+              <MapPin size={16} />
+              Ver el negocio
+            </PrimaryBtn>
+
+            <GhostBtn
+              onClick={() => {
+                const url = `${window.location.origin}/mi-reserva`;
+                navigator.clipboard.writeText(url);
+                toast.success('Enlace copiado. Guárdalo para consultar tu reserva después.');
+              }}
+            >
+              📋 Copiar enlace de consulta
+            </GhostBtn>
+
+            <GhostBtn onClick={() => navigate('/')}>
+              <Home size={14} style={{ verticalAlign: '-2px', marginRight: '0.3rem' }} />
+              Volver al inicio
+            </GhostBtn>
+          </Actions>
         </Card>
       </PageWrapper>
     </>

@@ -40,9 +40,9 @@ const NAV_LINKS_BY_ROLE = {
 
 // 🎯 Configuración del sidebar según el rol
 const SIDEBAR_CONFIG_BY_ROLE = {
-  'super-admin': { badge: 'SA', brand: 'AlPunto', subtitle: 'Super Admin' },
-  'business-admin': { badge: 'A', brand: 'AlPunto', subtitle: 'Mi Negocio' },
-  'client': { badge: 'U', brand: 'AlPunto', subtitle: 'Mi Cuenta' },
+  'super-admin': { badge: 'SA', brand: 'ReservaPro', subtitle: 'Super Admin' },
+  'business-admin': { badge: 'A', brand: 'ReservaPro', subtitle: 'Mi Negocio' },
+  'client': { badge: 'U', brand: 'ReservaPro', subtitle: 'Mi Cuenta' },
 };
 
 export const Placeholder = ({ title, subtitle = 'Esta sección estará disponible pronto' }) => {

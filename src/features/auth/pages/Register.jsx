@@ -263,7 +263,7 @@ export const Register = () => {
               </svg>
             </div>
 
-            <h2>Descubre AlPunto</h2>
+            <h2>Descubre ReservaPro</h2>
             <p>
               Encuentra y reserva en los mejores negocios de Nicolás Romero.
             </p>

@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate', // Actualiza el service worker automáticamente
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'AlPunto - Reservas y Citas',
-        short_name: 'AlPunto',
+        name: 'ReservaPro - Reservas y Citas',
+        short_name: 'ReservaPro',
         description: 'Encuentra y reserva en los mejores negocios de Nicolás Romero.',
         theme_color: '#FF6B00', // Tu color naranja principal
         background_color: '#0A0A0A', // Tu fondo oscuro

@@ -86,7 +86,7 @@ export const UsersList = () => {
 
   return (
     <DashboardLayout
-      sidebarLogo={<><span className="badge-icon">SA</span><div><span>AlPunto</span><span className="business-tag">Super Admin</span></div></>}
+      sidebarLogo={<><span className="badge-icon">SA</span><div><span>ReservaPro</span><span className="business-tag">Super Admin</span></div></>}
       navLinks={NAV_LINKS.map(l => ({ ...l, active: l.to === '/super-admin/usuarios' }))}
       user={user}
       onLogout={handleLogout}

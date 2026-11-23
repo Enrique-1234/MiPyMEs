@@ -187,7 +187,7 @@ export const MenuList = () => {
   if (loading) {
     return (
       <DashboardLayout
-        sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
+        sidebarLogo={<><span className="badge-icon">A</span><div><span>ReservaPro</span><span className="business-tag">Mi Negocio</span></div></>}
         navLinks={getBusinessNavLinks(business, '/dashboard/catalogo')} 
         user={user}
         onLogout={handleLogout}
@@ -202,7 +202,7 @@ export const MenuList = () => {
    if (!business) {
     return (
       <DashboardLayout
-        sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
+        sidebarLogo={<><span className="badge-icon">A</span><div><span>ReservaPro</span><span className="business-tag">Mi Negocio</span></div></>}
         navLinks={getBusinessNavLinks(business, '/dashboard/catalogo')} 
         user={user}
         onLogout={handleLogout}
@@ -224,7 +224,7 @@ export const MenuList = () => {
 
   return (
     <DashboardLayout
-      sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">{business.name}</span></div></>}
+      sidebarLogo={<><span className="badge-icon">A</span><div><span>ReservaPro</span><span className="business-tag">{business.name}</span></div></>}
       navLinks={getBusinessNavLinks(business, '/dashboard/catalogo')}      user={user}
       onLogout={handleLogout}
       headerTitle="Catálogo / Menú"

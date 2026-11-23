@@ -179,7 +179,7 @@ export const RegisterBusinessInfo = () => {
               ¡Solicitud enviada!
             </h1>
             <p style={{ color: '#94A3B8', lineHeight: 1.6, marginBottom: '2rem' }}>
-              Tu negocio está en revisión. El equipo de AlPunto lo verificará en las próximas 24-48 hrs y te avisaremos por correo.
+              Tu negocio está en revisión. El equipo de ReservaPro lo verificará en las próximas 24-48 hrs y te avisaremos por correo.
             </p>
            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
   <button

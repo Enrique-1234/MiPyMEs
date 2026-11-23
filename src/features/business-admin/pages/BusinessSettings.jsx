@@ -169,7 +169,7 @@ export const BusinessSettings = () => {
   if (loading) {
     return (
       <DashboardLayout
-        sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
+        sidebarLogo={<><span className="badge-icon">A</span><div><span>ReservaPro</span><span className="business-tag">Mi Negocio</span></div></>}
         navLinks={[]}
         user={user}
         onLogout={handleLogout}
@@ -184,7 +184,7 @@ export const BusinessSettings = () => {
   if (!business) {
     return (
       <DashboardLayout
-        sidebarLogo={<><span className="badge-icon">A</span><div><span>AlPunto</span><span className="business-tag">Mi Negocio</span></div></>}
+        sidebarLogo={<><span className="badge-icon">A</span><div><span>ReservaPro</span><span className="business-tag">Mi Negocio</span></div></>}
         navLinks={getBusinessNavLinks(null, '/dashboard/configuracion')} 
         user={user}
         onLogout={handleLogout}
@@ -193,7 +193,7 @@ export const BusinessSettings = () => {
       >
         <EmptyState>
           <AlertCircle size={40} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-          <p>No tienes un negocio asignado. Contacta al administrador de AlPunto.</p>
+          <p>No tienes un negocio asignado. Contacta al administrador de ReservaPro.</p>
         </EmptyState>
       </DashboardLayout>
     );
@@ -205,7 +205,7 @@ export const BusinessSettings = () => {
         <>
           <span className="badge-icon">A</span>
           <div>
-            <span>AlPunto</span>
+            <span>ReservaPro</span>
             <span className="business-tag">{business.name}</span>
           </div>
         </>

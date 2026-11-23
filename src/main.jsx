@@ -17,6 +17,6 @@ registerSW({
     console.log('Nueva versión disponible. Recarga para actualizar.');
   },
   onOfflineReady() {
-    console.log('AlPunto está lista para funcionar offline.');
+    console.log('ReservaPro está lista para funcionar offline.');
   },
 });

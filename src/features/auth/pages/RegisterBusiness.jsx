@@ -133,7 +133,7 @@ export const RegisterBusiness = () => {
                 <circle cx="50" cy="42" r="12" fill="#2563eb" />
               </svg>
             </div>
-            <h2>Haz crecer tu negocio con AlPunto</h2>
+            <h2>Haz crecer tu negocio con ReservaPro</h2>
             <p>Sin comisiones. Sin contratos. Solo visibilidad y reservas.</p>
           </div>
         </VisualPanel>

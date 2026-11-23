@@ -239,13 +239,13 @@ useEffect(() => {
               </svg>
             </PinStage>
 
-            <MainTitle aria-label="Descubre los mejores comercios en AlPunto">
+            <MainTitle aria-label="Descubre los mejores comercios en ReservaPro">
               {HERO_WORDS.map((w, i) => (
                 <React.Fragment key={i}>
                   <Word className="hero-word" aria-hidden="true"><span>{w}</span></Word>{' '}
                 </React.Fragment>
               ))}
-              <Word className="hero-word" $brand aria-hidden="true"><span>AlPunto</span></Word>
+              <Word className="hero-word" $brand aria-hidden="true"><span>ReservaPro</span></Word>
             </MainTitle>
 
             <HeroLead className="hero-lead">
@@ -329,7 +329,7 @@ useEffect(() => {
         </Section>
 
         <FinalCTA id="unete" className="final-cta">
-          <h2>Haz que te encuentren AlPunto</h2>
+          <h2>Haz que te encuentren ReservaPro</h2>
           <p>Registra tu negocio gratis y aparece frente a los clientes que ya te están buscando.</p>
           <a ref={finalBtn} href="/registro-negocio">Registrar mi negocio</a>        </FinalCTA>
       </HomeContainer>

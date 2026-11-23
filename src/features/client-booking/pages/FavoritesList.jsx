@@ -120,7 +120,7 @@ export const FavoritesList = () => {
 
   return (
     <DashboardLayout
-      sidebarLogo={<><span className="badge-icon">U</span><div><span>AlPunto</span><span className="business-tag">Mi Cuenta</span></div></>}
+      sidebarLogo={<><span className="badge-icon">U</span><div><span>ReservaPro</span><span className="business-tag">Mi Cuenta</span></div></>}
       navLinks={NAV_LINKS.map(l => ({ ...l, active: l.to === '/user/favoritos' }))}
       user={user}
       onLogout={handleLogout}

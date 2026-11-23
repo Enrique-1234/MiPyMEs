@@ -103,7 +103,7 @@ export const Navbar = () => {
       <NavHeader ref={headerRef} $scrolled={scrolled}>
         <LogoBrand to="/">
           <span className="logo-mark">A</span>
-          <span>AlPunto</span>
+          <span>ReservaPro</span>
         </LogoBrand>
 
         <NavLinksGroup>

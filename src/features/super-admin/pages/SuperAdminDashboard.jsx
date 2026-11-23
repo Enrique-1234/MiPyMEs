@@ -47,7 +47,7 @@ export const SuperAdminDashboard = () => {
         <>
           <span className="badge-icon">SA</span>
           <div>
-            <span>AlPunto</span>
+            <span>ReservaPro</span>
             <span className="business-tag">Super Admin</span>
           </div>
         </>
@@ -56,7 +56,7 @@ export const SuperAdminDashboard = () => {
       user={user}
       onLogout={handleLogout}
       headerTitle="Panel de Control Central"
-      headerSubtitle="Vista global de la plataforma AlPunto"
+      headerSubtitle="Vista global de la plataforma ReservaPro"
     >
       <StatsGrid stats={stats} />
 
