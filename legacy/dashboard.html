@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ReservaPro Nicolás Romero</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/animation.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="dashboard">
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" aria-label="Navegación lateral">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <span class="logo-mark">R</span>
+          <span>ReservaPro</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Inicio</span>
+        </a>
+        <a href="reservas.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Reservas</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/></svg>
+          <span>Calendario</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Clientes</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span>Servicios</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Empleados</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Configuración</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="avatar">LR</div>
+          <div class="sidebar-user-info">
+            <strong>Luis Ramírez</strong>
+            <span>Barbería Studio NR</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <div class="dashboard-main">
+      <header class="dashboard-header">
+        <h1>Dashboard</h1>
+
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" placeholder="Buscar reservas, clientes..." aria-label="Buscar" />
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn tooltip" data-tooltip="Notificaciones" aria-label="Notificaciones">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="badge-dot"></span>
+          </button>
+          <div class="avatar avatar-lg" role="button" tabindex="0" aria-label="Perfil de usuario">LR</div>
+        </div>
+      </header>
+
+      <!-- Contenido -->
+      <div class="dashboard-content">
+
+        <!-- Stats adaptados a MXN -->
+        <section class="stats-grid" aria-label="Estadísticas">
+          <article class="stat-card reveal">
+            <div class="stat-card-header">
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <span class="stat-trend">+14%</span>
+            </div>
+            <div class="stat-value">16</div>
+            <div class="stat-label">Citas de hoy</div>
+          </article>
+
+          <article class="stat-card reveal reveal-delay-1" data-color="cyan">
+            <div class="stat-card-header">
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="stat-trend">+8%</span>
+            </div>
+            <div class="stat-value">22</div>
+            <div class="stat-label">Próximas reservas</div>
+          </article>
+
+          <article class="stat-card reveal reveal-delay-2" data-color="green">
+            <div class="stat-card-header">
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <span class="stat-trend">+18%</span>
+            </div>
+            <div class="stat-value">340</div>
+            <div class="stat-label">Clientes registrados</div>
+          </article>
+
+          <article class="stat-card reveal reveal-delay-3" data-color="orange">
+            <div class="stat-card-header">
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <span class="stat-trend">+12%</span>
+            </div>
+            <div class="stat-value">$38,500</div>
+            <div class="stat-label">Ingresos del mes (MXN)</div>
+          </article>
+        </section>
+
+        <!-- Grid principal -->
+        <div class="dashboard-grid-2">
+          <!-- Tabla reservas locales -->
+          <section class="panel reveal">
+            <div class="panel-header">
+              <h3>Próximas citas</h3>
+              <a href="reservas.html" class="btn btn-ghost btn-sm">Ver todas</a>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Cliente</th>
+                      <th>Servicio</th>
+                      <th>Hora</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="cell-user">
+                          <div class="avatar" style="width:32px;height:32px;font-size:.75rem;">MC</div>
+                          <strong>María Castro</strong>
+                        </div>
+                      </td>
+                      <td>Corte + Barba ($180)</td>
+                      <td>10:30 AM</td>
+                      <td><span class="badge badge-success">Confirmada</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="cell-user">
+                          <div class="avatar" style="width:32px;height:32px;font-size:.75rem;background:linear-gradient(135deg,#f59e0b,#ef4444);">LR</div>
+                          <strong>Luis Ramírez</strong>
+                        </div>
+                      </td>
+                      <td>Corte Clásico / Fade ($120)</td>
+                      <td>11:15 AM</td>
+                      <td><span class="badge badge-warning">Pendiente</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="cell-user">
+                          <div class="avatar" style="width:32px;height:32px;font-size:.75rem;background:linear-gradient(135deg,#10b981,#06b6d4);">AG</div>
+                          <strong>Ana Gómez</strong>
+                        </div>
+                      </td>
+                      <td>Exfoliación y Facial ($200)</td>
+                      <td>12:00 PM</td>
+                      <td><span class="badge badge-success">Confirmada</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="cell-user">
+                          <div class="avatar" style="width:32px;height:32px;font-size:.75rem;background:linear-gradient(135deg,#8b5cf6,#ec4899);">PT</div>
+                          <strong>Pedro Torres</strong>
+                        </div>
+                      </td>
+                      <td>Corte + Barba ($180)</td>
+                      <td>01:30 PM</td>
+                      <td><span class="badge badge-info">En curso</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- Calendario + Actividad -->
+          <div style="display:flex; flex-direction:column; gap: var(--space-md);">
+            <section class="panel reveal reveal-delay-1">
+              <div class="panel-header">
+                <h3>Calendario</h3>
+                <span class="text-muted" style="font-size:.8125rem;">Septiembre 2026</span>
+              </div>
+              <div class="panel-body">
+                <div class="calendar-mini">
+                  <span class="day-label">L</span><span class="day-label">M</span><span class="day-label">X</span><span class="day-label">J</span><span class="day-label">V</span><span class="day-label">S</span><span class="day-label">D</span>
+                  <span class="day">1</span><span class="day">2</span><span class="day has-event">3</span><span class="day">4</span><span class="day">5</span><span class="day">6</span><span class="day">7</span>
+                  <span class="day">8</span><span class="day">9</span><span class="day has-event">10</span><span class="day active">21</span><span class="day">22</span><span class="day">23</span><span class="day">24</span>
+                  <span class="day">25</span><span class="day has-event">26</span><span class="day">27</span><span class="day">28</span><span class="day">29</span><span class="day">30</span><span class="day">31</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel reveal reveal-delay-2">
+              <div class="panel-header">
+                <h3>Actividad reciente</h3>
+              </div>
+              <div class="panel-body">
+                <div class="activity-list">
+                  <div class="activity-item">
+                    <div class="activity-icon" style="background: rgba(16,185,129,.12); color: var(--color-success);">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="activity-content">
+                      <p>María Castro confirmó su cita para Fade</p>
+                      <span>Hace 5 minutos</span>
+                    </div>
+                  </div>
+
+                  <div class="activity-item">
+                    <div class="activity-icon" style="background: rgba(79,70,229,.12); color: var(--color-primary);">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    </div>
+                    <div class="activity-content">
+                      <p>Nueva reserva de Corte + Barba ($180)</p>
+                      <span>Hace 20 minutos</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Navegación inferior">
+    <a href="dashboard.html" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Inicio
+    </a>
+    <a href="reservas.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Reservas
+    </a>
+  </nav>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

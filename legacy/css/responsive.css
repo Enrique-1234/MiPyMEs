@@ -1,0 +1,226 @@
+/* ============================================
+   RESPONSIVE - Mobile First
+   Base = móvil, se escala hacia arriba
+   ============================================ */
+
+/* ============================================
+   TELÉFONOS GRANDES (≥ 480px)
+   ============================================ */
+
+@media (min-width: 480px) {
+  .hero-cta {
+    flex-wrap: nowrap;
+  }
+
+  .booking-step-label {
+    display: inline;
+  }
+
+  .booking-step-connector {
+    width: 40px;
+  }
+}
+
+/* ============================================
+   TABLETS (≥ 640px)
+   ============================================ */
+
+@media (min-width: 640px) {
+  .solutions-grid,
+  .steps-grid,
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  .booking-step-connector {
+    width: 60px;
+  }
+}
+
+/* ============================================
+   TABLETS GRANDES (≥ 768px)
+   ============================================ */
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
+
+  .nav-toggle {
+    display: none;
+  }
+
+  .mobile-menu {
+    display: none;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-visual {
+    max-width: 100%;
+  }
+
+  .dashboard-header .search-bar {
+    display: flex;
+  }
+
+  .auth-page {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .auth-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-form-wrapper {
+    min-height: 100vh;
+  }
+
+  .dashboard-grid-2 {
+    grid-template-columns: 1.5fr 1fr;
+  }
+
+  .booking-steps {
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================
+   DESKTOP (≥ 1024px)
+   ============================================ */
+
+@media (min-width: 1024px) {
+  .dashboard {
+    grid-template-columns: 260px 1fr;
+  }
+
+  .sidebar {
+    display: flex;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .solutions-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+  }
+
+  .dashboard-content {
+    padding: var(--space-lg) clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+/* ============================================
+   FULL HD Y SUPERIOR (≥ 1280px)
+   ============================================ */
+
+@media (min-width: 1280px) {
+  .dashboard {
+    grid-template-columns: 280px 1fr;
+  }
+
+  .hero-grid {
+    gap: 6rem;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ============================================
+   2K Y SUPERIOR (≥ 1536px)
+   ============================================ */
+
+@media (min-width: 1536px) {
+  :root {
+    --container-max: 1440px;
+  }
+}
+
+/* ============================================
+   4K Y ULTRA ANCHO (≥ 1920px)
+   ============================================ */
+
+@media (min-width: 1920px) {
+  :root {
+    --container-max: 1600px;
+  }
+
+  body {
+    font-size: 1.0625rem;
+  }
+}
+
+/* ============================================
+   PANTALLAS ULTRA ANCHAS (≥ 2560px)
+   ============================================ */
+
+@media (min-width: 2560px) {
+  :root {
+    --container-max: 1800px;
+  }
+}
+
+/* ============================================
+   ORIENTACIÓN LANDSCAPE EN MÓVILES
+   ============================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    padding-top: 6rem;
+  }
+
+  .auth-form-wrapper {
+    padding-block: 2rem;
+  }
+}
+
+/* ============================================
+   IMPRESIÓN
+   ============================================ */
+
+@media print {
+  .navbar,
+  .sidebar,
+  .bottom-nav,
+  .mobile-menu,
+  .menu-overlay,
+  .toast-container {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
